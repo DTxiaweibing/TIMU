@@ -129,7 +129,7 @@
       font-size: 1.8rem;
       filter: drop-shadow(0 2px 2px #577e8a);
     }
-    /* 核心修改：优化截图网格的居中，解决左边贴边问题 */
+    /* 核心修改：大幅增加截图卡片的高度，解决上下显示不全问题 */
     .screenshot-showcase {
       margin: 3rem 0;
     }
@@ -139,10 +139,8 @@
       justify-content: center;
       gap: 2rem;
       margin-top: 2rem;
-      /* 关键修改1：通过自动外边距和内边距组合，强制居中并处理计算偏差 */
       margin-left: auto;
       margin-right: auto;
-      /* 关键修改2：添加左右内边距，为网格提供缓冲空间，确保不贴边 */
       padding: 0 1rem;
     }
     .screenshot-item {
@@ -153,8 +151,9 @@
       transition: transform 0.2s;
       text-align: center;
       position: relative;
-      width: 100%;
-      padding-bottom: 177.78%;
+      width: 100%; /* 300px */
+      /* 关键修改：将 padding-bottom 从 150% 大幅增加到 223%，显著提高卡片高度 */
+      padding-bottom: 223%; /* 新的宽高比约为 9:20 (300px * 2.23 = 669px) */
       overflow: hidden;
     }
     .screenshot-item:hover {
@@ -166,7 +165,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: cover; /* 图片会缩放填充容器，由于容器更高，图片上下被裁剪的部分会减少 */
       border-radius: 1rem;
       border: 2px solid #0a7e8c20;
     }
@@ -286,12 +285,12 @@
         justify-content: center;
         gap: 3.5rem;
         max-width: 300px;
-        /* 关键修改3：移动端也添加内边距确保居中 */
         padding: 0;
       }
       .screenshot-item {
         margin: 0 auto;
-        padding-bottom: 177.78%;
+        /* 移动端保持相同的高比例 */
+        padding-bottom: 223%;
       }
       .screenshot-caption {
         position: static;
