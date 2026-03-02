@@ -1,6 +1,17 @@
 {
-  "version": "1.66.93",
-  "url": "",
-  "content": "修复已知问题，提升稳定性\n:更新了主动查询升级",
-  "extract_code": ""
+    "config_version": "1.66.93",
+    "file_info": {
+        "version": "1.66.95",
+        "name": "养虾助手1.66.93.apk",
+        "size": 4209816,
+        "md5": "A30F2B7D8DD8E285A9453089872FA4FC",
+        "sha256": "ECEE58A62366EF5614CFA614D6F6B441CE962B07D422B844D1EF7A269F40A73F",
+        "download_url": "https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/养虾助手1.66.93.apk",
+        "github_repo": "https://github.com/DTxiaweibing/TIMU"
+    },
+    "update_log": "啦咯啦咯啦咯啦咯啦咯\n图兔兔图图9突突突有找有早洗哇这9\nhghghjjl",
+    "metadata": {
+        "generated_at": "2026-03-04T00:49:55+08:00",
+        "generator_version": "1.0.0"
+    }
 }
