@@ -37,7 +37,7 @@
 
 | 拌料计算器界面 | 查料记录界面 | 刷题宝界面 |
 | :---: | :---: | :---: |
-| ![拌料计算器](image/banliao.png) | ![查料表](image/chaliao.png) | ![刷题宝](image/shuti.png) |
+| ![拌料计算器](image/banliao.jpg) | ![查料表](image/chaliao.jpg) | ![刷题宝](image/shuti.jpg) |
 
 
 ## 🚀 快速开始
