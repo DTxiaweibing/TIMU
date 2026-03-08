@@ -37,15 +37,7 @@
 
 | 拌料计算器界面 | 查料记录界面 | 刷题宝界面 |
 | :---: | :---: | :---: |
-| ![拌料计算器](assets/screenshot_calculator.png) | ![查料表](assets/screenshot_checkfeed.png) | ![刷题宝](assets/screenshot_quiz.png) |
-
-> 图片存放说明：
-> 1. 在项目根目录新建 `assets` 文件夹（如果没有的话）。
-> 2. 将你的截图重命名为：
->    - `screenshot_calculator.png`（拌料计算器截图）
->    - `screenshot_checkfeed.png`（查料表截图）
->    - `screenshot_quiz.png`（刷题宝截图）
-> 3. 把这三张图片放进 `assets` 文件夹，然后重新提交推送即可。
+| ![拌料计算器](image/banliao.png) | ![查料表](image/chaliao.png) | ![刷题宝](image/shuti.png) |
 
 
 ## 🚀 快速开始
