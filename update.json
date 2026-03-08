@@ -9,9 +9,9 @@
         "download_url": "https://dtxiaweibing.github.io/TIMU/%E5%85%BB%E8%99%BE%E5%8A%A9%E6%89%8B1.66.97.apk",
         "github_repo": "https://github.com/DTxiaweibing/TIMU"
     },
-    "update_log": "本次更新修复了已知问题\n优化应用整体性能  提升整体稳定性与流畅度\n新增更新自动提醒功能，完善用户体验，操作更便捷。\n修复部分设备兼容性问题，优化加载速度，使用更舒心。",
+    "update_log": "本次更新修复了已知问题\n优化应用整体性能  提升整体稳定性与流畅度\n使用期间屏幕常亮，减少因息屏带来的不适\n新增更新自动提醒功能，完善用户体验，操作更便捷。\n修复部分设备兼容性问题，优化加载速度，使用更舒心。",
     "metadata": {
-        "generated_at": "2026-03-08T23:34:40+08:00",
+        "generated_at": "2026-03-08T23:45:37+08:00",
         "generator_version": "1.0.0"
     }
 }
