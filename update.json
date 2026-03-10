@@ -2,16 +2,16 @@
     "config_version": "1.66.98",
     "file_info": {
         "version": "1.66.98",
-        "name": "养虾助手1.66.98.apk",
+        "name": "养虾助手1.66.98 (1).apk",
         "size": 4549916,
         "md5": "2F71D277CB9ED49EA52802822EDDA2B8",
         "sha256": "E8D23D3CD0F886D65F6FADFB36092CE232B9C989D81247363DBABB419AE671CB",
         "download_url": "https://dtxiaweibing.github.io/TIMU/%E5%85%BB%E8%99%BE%E5%8A%A9%E6%89%8B1.66.98.apk",
         "github_repo": "https://github.com/DTxiaweibing/TIMU"
     },
-    "update_log": "本次更新修复了已知问题。\n使用期间屏幕常亮。拒绝息屏带来不适。\n优化了更新升级体验，系统运行更稳定，更流畅。",
+    "update_log": "本次更新修复了已知问题。\n使用期间屏幕常亮。拒绝息屏不适。\n优化了更新升级体验，系统运行更稳定更流畅。",
     "metadata": {
-        "generated_at": "2026-03-10T22:22:57+08:00",
+        "generated_at": "2026-03-10T22:50:49+08:00",
         "generator_version": "1.0.0"
     }
 }
