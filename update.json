@@ -1,17 +1,17 @@
 {
-    "config_version": "1.66.97",
+    "config_version": "1.66.98",
     "file_info": {
         "version": "1.66.98",
-        "name": "养虾助手1.66.97.apk",
-        "size": 4218070,
-        "md5": "A2ADCB957705BA0A285326B0FA764763",
-        "sha256": "1D3535A798FCA900BEFB5B6FFBC84D55BC7941926CFF36C169BA0825A51CDDA6",
-        "download_url": "https://dtxiaweibing.github.io/TIMU/%E5%85%BB%E8%99%BE%E5%8A%A9%E6%89%8B1.66.97.apk",
+        "name": "养虾助手1.66.98.apk",
+        "size": 4549916,
+        "md5": "2EB87AA93259DDD27E664FF0724C616B",
+        "sha256": "AF752E33A40A357487BF62602D83B39D16C446FBCD236A5A89EF3EA815490185",
+        "download_url": "https://dtxiaweibing.github.io/TIMU/%E5%85%BB%E8%99%BE%E5%8A%A9%E6%89%8B1.66.98.apk",
         "github_repo": "https://github.com/DTxiaweibing/TIMU"
     },
     "update_log": "恶梦的人都有什么\n了 啦咯啦咯啦咯啦咯啦",
     "metadata": {
-        "generated_at": "2026-03-10T13:50:24+08:00",
+        "generated_at": "2026-03-10T14:05:15+08:00",
         "generator_version": "1.0.0"
     }
 }
