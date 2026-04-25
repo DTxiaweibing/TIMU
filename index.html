@@ -129,20 +129,15 @@
       font-size: 1.8rem;
       filter: drop-shadow(0 2px 2px #577e8a);
     }
-    /* 核心修改：优化截图网格的居中，解决左边贴边问题 */
-    .screenshot-showcase {
-      margin: 3rem 0;
-    }
+    .screenshot-showcase { margin: 3rem 0; }
     .screenshot-grid {
       display: grid;
       grid-template-columns: repeat(3, 300px);
       justify-content: center;
       gap: 2rem;
       margin-top: 2rem;
-      /* 关键修改1：通过自动外边距和内边距组合，强制居中并处理计算偏差 */
       margin-left: auto;
       margin-right: auto;
-      /* 关键修改2：添加左右内边距，为网格提供缓冲空间，确保不贴边 */
       padding: 0 1rem;
     }
     .screenshot-item {
@@ -157,9 +152,7 @@
       padding-bottom: 177.78%;
       overflow: hidden;
     }
-    .screenshot-item:hover {
-      transform: translateY(-5px);
-    }
+    .screenshot-item:hover { transform: translateY(-5px); }
     .screenshot-item img {
       position: absolute;
       top: 0;
@@ -195,10 +188,7 @@
       border: 1px solid #e2f0f5;
     }
     .feature:hover { transform: translateY(-6px); }
-    .icon {
-      font-size: 3.3rem;
-      margin-bottom: 0.8rem;
-    }
+    .icon { font-size: 3.3rem; margin-bottom: 0.8rem; }
     .feature h3 { margin: 0.5rem 0; color: #0a5e70; }
     .quiz-card {
       background: white;
@@ -279,6 +269,47 @@
       margin-top: 2rem;
       font-size: 0.95rem;
     }
+
+    /* 行情板块样式 */
+    .market-table-wrapper {
+      overflow-x: auto;
+      margin: 1.2rem 0;
+    }
+    .market-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      background: white;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 6px 16px #c0dbe3;
+    }
+    .market-table th, .market-table td {
+      padding: 0.6rem 0.8rem;
+      border-bottom: 1px solid #d9ecf2;
+      text-align: left;
+    }
+    .market-table th {
+      background: #e6f4f7;
+      color: #0a5e6c;
+      font-weight: 600;
+    }
+    .market-category-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #0a5e70;
+      margin: 1.8rem 0 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .market-date {
+      color: #0a5e6c;
+      font-weight: 600;
+      font-size: 1rem;
+      display: inline-block;
+    }
+
     /* 移动端适配 */
     @media (max-width: 768px) {
       .screenshot-grid {
@@ -286,7 +317,6 @@
         justify-content: center;
         gap: 3.5rem;
         max-width: 300px;
-        /* 关键修改3：移动端也添加内边距确保居中 */
         padding: 0;
       }
       .screenshot-item {
@@ -315,6 +345,7 @@
       <nav class="main-nav" aria-label="主要页面跳转">
         <a href="#home">首页</a>
         <a href="#features">特性</a>
+        <a href="#market">行情</a>
         <a href="#quiz">测验</a>
         <a href="#download">下载</a>
       </nav>
@@ -337,6 +368,23 @@
       <li>刷题宝：养虾实操题库132+，还可下载其他类型题库</li>
       <li>完全离线可用，简单直接，无广告</li>
     </ul>
+  </section>
+
+  <!-- 当日水产行情 -->
+  <section id="market" class="container" aria-labelledby="market-heading">
+    <h2 id="market-heading">📈 今日水产行情 (盛阳食品城)</h2>
+    <p style="margin-bottom:0.5rem;">每日自动加载同目录下的 <code>price.xlsx</code> ，也可手动上传。</p>
+    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.8rem;">
+      <span id="market-date" class="market-date"></span>
+      <input type="file" id="market-file" accept=".xlsx, .xls" style="display:none;" />
+      <button id="market-upload-btn" class="btn">⬆️ 上传Excel行情表</button>
+    </div>
+    <div id="market-tables" style="margin-top:0.8rem;">
+      <p id="market-loading">🔄 正在加载行情数据...</p>
+      <p id="market-error" style="display:none; color:#b44;">⚠️ 暂无行情数据，请点击上方按钮上传 Excel 文件</p>
+    </div>
+    <!-- 隐藏的 JSON 数据块，供 API 抓取 -->
+    <pre id="price-json" style="display:none;">{}</pre>
   </section>
 
   <section id="screenshots" class="container screenshot-showcase" aria-labelledby="screenshots-heading">
@@ -427,8 +475,10 @@
     <p style="font-size:0.85rem; margin-top:0.3rem;">🪪 拌料计算 · 棚数查料 · 刷题宝 · 三合一工具</p>
   </footer>
 
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   <script>
     (function() {
+      // 测验逻辑
       const ANSWERS = {
         q1: 'A',
         q2: 'B',
@@ -512,6 +562,7 @@
 
       submitBtn.addEventListener('click', evaluateQuiz);
 
+      // 平滑滚动
       document.querySelectorAll('.main-nav a[href^="#"], .cta[href^="#"]').forEach(link => {
         link.addEventListener('click', function(e) {
           const targetId = this.getAttribute('href');
@@ -529,6 +580,185 @@
         const el = document.querySelector(window.location.hash);
         if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 100);
       }
+
+      // ========== 行情解析逻辑 ==========
+      const marketLoading = document.getElementById('market-loading');
+      const marketError = document.getElementById('market-error');
+      const marketTables = document.getElementById('market-tables');
+      const marketDateSpan = document.getElementById('market-date');
+      const fileInput = document.getElementById('market-file');
+      const uploadBtn = document.getElementById('market-upload-btn');
+      const priceJsonPre = document.getElementById('price-json');
+
+      function parsePriceData(sheetData) {
+        const rows = sheetData;
+        const categories = [];
+        let currentMainTitle = '';
+        let processingLeftRightSplit = false;
+        let leftSubCategory = null;
+        let rightSubCategory = null;
+        let dateStr = '';
+
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row || row.length === 0) continue;
+
+          const rowText = row.map(c => c ? c.toString().trim() : '').join(' ');
+          if (rowText.includes('日期:')) {
+            const match = rowText.match(/日期[:\s]*([\d.]+)/);
+            if (match) dateStr = match[1];
+            continue;
+          }
+
+          const firstCell = row[0] ? row[0].toString().trim() : '';
+          if (firstCell.includes('批发价格') || firstCell.includes('批发价')) {
+            currentMainTitle = firstCell.replace('：',':').replace(':','').trim();
+            processingLeftRightSplit = false;
+            leftSubCategory = null;
+            rightSubCategory = null;
+
+            if (currentMainTitle.includes('杂鱼类') && currentMainTitle.includes('淡水鱼类')) {
+              processingLeftRightSplit = true;
+              leftSubCategory = { title: '杂鱼类', items: [] };
+              rightSubCategory = { title: '淡水鱼类', items: [] };
+              categories.push(leftSubCategory);
+              categories.push(rightSubCategory);
+              currentMainTitle = '';
+            } else {
+              const category = { title: currentMainTitle, items: [] };
+              categories.push(category);
+            }
+            continue;
+          }
+
+          if (firstCell.includes('编号') || firstCell.includes('品名')) continue;
+
+          const leftName = row[1] ? row[1].toString().trim() : '';
+          const leftPrice = row[2] ? row[2].toString().trim() : '';
+          const rightName = row[4] ? row[4].toString().trim() : '';
+          const rightPrice = row[5] ? row[5].toString().trim() : '';
+
+          const formatPrice = (p) => p ? p.replace(/-/g, '~') : '';
+
+          if (processingLeftRightSplit && leftSubCategory && rightSubCategory) {
+            if (leftName && leftPrice) {
+              leftSubCategory.items.push({ name: leftName, price: formatPrice(leftPrice) });
+            }
+            if (rightName && rightPrice) {
+              rightSubCategory.items.push({ name: rightName, price: formatPrice(rightPrice) });
+            }
+          } else {
+            if (categories.length === 0) continue;
+            const currentCategory = categories[categories.length - 1];
+            if (leftName && leftPrice) {
+              currentCategory.items.push({ name: leftName, price: formatPrice(leftPrice) });
+            }
+            if (rightName && rightPrice) {
+              currentCategory.items.push({ name: rightName, price: formatPrice(rightPrice) });
+            }
+          }
+        }
+
+        return { date: dateStr, categories: categories };
+      }
+
+      function renderMarketData(data) {
+        let html = '';
+        if (data.date) {
+          marketDateSpan.textContent = `📅 日期：${data.date}`;
+        } else {
+          marketDateSpan.textContent = '';
+        }
+
+        if (!data.categories || data.categories.length === 0) {
+          html = '<p>表格中未识别到行情数据</p>';
+        } else {
+          data.categories.forEach(cat => {
+            if (!cat.items || cat.items.length === 0) return;
+            html += `<div class="market-category-title">🦞 ${escapeHtml(cat.title)}</div>`;
+            html += '<div class="market-table-wrapper"><table class="market-table"><thead><tr><th>品名/规格</th><th>价格(元/斤)</th></tr></thead><tbody>';
+            cat.items.forEach(item => {
+              html += `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.price)}</td></tr>`;
+            });
+            html += '</tbody></table></div>';
+          });
+        }
+
+        const contentDiv = document.createElement('div');
+        contentDiv.innerHTML = html;
+        // 清除旧的表格内容，但保留 loading/error 提示
+        marketTables.querySelectorAll('div').forEach(el => el.remove());
+        marketTables.appendChild(contentDiv);
+
+        marketLoading.style.display = 'none';
+        marketError.style.display = 'none';
+      }
+
+      function escapeHtml(text) {
+        return String(text).replace(/[&<>"]/g, function(m) {
+          if (m === '&') return '&amp;';
+          if (m === '<') return '&lt;';
+          if (m === '>') return '&gt;';
+          if (m === '"') return '&quot;';
+          return m;
+        });
+      }
+
+      // 更新隐藏的 JSON 数据块
+      function updatePriceJson(data) {
+        if (priceJsonPre) {
+          priceJsonPre.textContent = JSON.stringify(data);
+        }
+      }
+
+      function processExcelFile(arrayBuffer) {
+        try {
+          const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[firstSheetName];
+          const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+          const parsed = parsePriceData(sheetData);
+          renderMarketData(parsed);
+          updatePriceJson(parsed);
+          marketLoading.style.display = 'none';
+          marketError.style.display = 'none';
+        } catch (e) {
+          console.error(e);
+          marketLoading.style.display = 'none';
+          marketError.style.display = 'block';
+          marketError.textContent = '⚠️ 解析 Excel 文件失败，请检查格式是否正确';
+        }
+      }
+
+      async function autoLoadPrice() {
+        try {
+          const response = await fetch('price.xlsx');
+          if (!response.ok) throw new Error('文件不存在');
+          const arrayBuffer = await response.arrayBuffer();
+          processExcelFile(arrayBuffer);
+        } catch (err) {
+          console.warn('自动加载 price.xlsx 失败，等待手动上传', err);
+          marketLoading.style.display = 'none';
+          marketError.style.display = 'block';
+        }
+      }
+
+      uploadBtn.addEventListener('click', () => {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(loadEvt) {
+          const arrayBuffer = loadEvt.target.result;
+          processExcelFile(arrayBuffer);
+        };
+        reader.readAsArrayBuffer(file);
+      });
+
+      autoLoadPrice();
     })();
   </script>
 </body>
