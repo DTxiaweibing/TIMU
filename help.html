@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小棚养虾 · 使用帮助</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: #f4f9fb;
+            padding: 16px;
+            color: #1e2f4d;
+        }
+        h2 {
+            color: #0a7e8c;
+            margin-bottom: 16px;
+            font-size: 1.4rem;
+        }
+        .faq-item {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .question {
+            padding: 14px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #1e2f4d;
+            transition: background 0.2s;
+        }
+        .question:active {
+            background: #e6f4f7;
+        }
+        .question.read {
+            color: #2e7d32;
+        }
+        .arrow {
+            font-size: 12px;
+            color: #999;
+            transition: transform 0.2s;
+        }
+        .faq-item.open .arrow {
+            transform: rotate(180deg);
+        }
+        .answer {
+            padding: 0 16px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            border-top: 1px solid #d9ecf2;
+            color: #445;
+            line-height: 1.6;
+        }
+        .faq-item.open .answer {
+            max-height: 600px;
+            padding: 14px 16px;
+        }
+    </style>
+</head>
+<body>
+    <h2>📖 小棚养虾 使用帮助</h2>
+
+    <div class="faq-item" id="faq1">
+        <div class="question" onclick="toggleFAQ('faq1')">
+            1. 怎么查看当天虾价？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">点击首页"行情资讯"按钮，App 会自动从网络获取当天的盛阳食品城批发价，并保存在本地。点击任意品种还可以看到历史价格走势。</div>
+    </div>
+
+    <div class="faq-item" id="faq2">
+        <div class="question" onclick="toggleFAQ('faq2')">
+            2. 拌料计算器的核心作用是什么？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">拌料计算器的所有功能，最终目的只有一个：<b>让算料和称料不再出错</b>。<br><br>你只需填好棚号、棚数和各种饲料的用量，系统会自动算好加水量、每棚称料量和平均吃料量。照着称就行了，不再担心算错比例、称错重量。</div>
+    </div>
+
+    <div class="faq-item" id="faq3">
+        <div class="question" onclick="toggleFAQ('faq3')">
+            3. 查料表的"吃料用时"是怎么算的？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">输入放料时间和查料时间后，App 会根据总棚数平均分配时间段，算出每一棚的理论开始时间，然后用查料时间减去理论开始时间，得到该棚的吃料用时。</div>
+    </div>
+
+    <div class="faq-item" id="faq4">
+        <div class="question" onclick="toggleFAQ('faq4')">
+            4. 数据会丢失吗？如何备份？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">所有养殖记录都保存在手机本地数据库中。建议定期在"我的"页面使用备份功能（开发中），或定期将重要的养殖记录截图保存。</div>
+    </div>
+
+    <div class="faq-item" id="faq5">
+        <div class="question" onclick="toggleFAQ('faq5')">
+            5. 行情数据是自动更新的吗？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">是的，每天打开行情页面会自动抓取最新数据。你也可以点击"刷新"按钮手动更新。历史数据会自动积累，用于走势图分析。</div>
+    </div>
+
+    <div class="faq-item" id="faq6">
+        <div class="question" onclick="toggleFAQ('faq6')">
+            6. 如何切换养殖批次？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">点击首页左上角的菜单按钮 → 选择"批次管理"，可以创建、切换或删除养殖批次。每个批次的数据是独立的。</div>
+    </div>
+
+    <div class="faq-item" id="faq7">
+        <div class="question" onclick="toggleFAQ('faq7')">
+            7. 【拌料计算器】表头长按和短按有什么功能？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">
+            在拌料计算器页面，表头的每一个列名都支持两种操作：<br>
+            <b>短按</b>：直接触发该列的功能（例如点击"水%"列可以修改全局水百分比）。<br>
+            <b>长按</b>：弹出菜单，可以选择"固定此列"或"隐藏此列"。固定后的列会始终显示在左边，不会被左右滑动所遮挡；隐藏的列不再显示，但数据依然保留。<br><br>
+            <i>注意：平板模式下大多数列本来都能完整显示，长按功能主要用于手机端。</i>
+        </div>
+    </div>
+
+    <div class="faq-item" id="faq8">
+        <div class="question" onclick="toggleFAQ('faq8')">
+            8. 【拌料计算器】"发酵料"的参与计算是什么意思？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">
+            点击"发酵料"表头，可以设置发酵料是否参与两种计算：<br>
+            <b>参与算水</b>：即发酵料的重量是否计入总干料重量，从而影响加水量的计算。<br>
+            <b>参与算料</b>：即发酵料的重量是否计入平均吃料量的计算。<br><br>
+            根据你的拌料习惯灵活选择。设置后所有行的计算结果会自动更新，确保称料数据准确。
+        </div>
+    </div>
+
+    <div class="faq-item" id="faq9">
+        <div class="question" onclick="toggleFAQ('faq9')">
+            9. 【拌料计算器】如何固定或隐藏某一列？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">
+            <b>固定列</b>：长按表头 → 选择"固定此列"。该列会移到左侧固定区域，左右滑动时它始终可见。<br>
+            <b>隐藏列</b>：长按表头 → 选择"隐藏此列"。隐藏后列不显示，但数据保留，再次通过菜单可以"显示此列"。<br>
+            在菜单中也可以选择"显示所有列"或"取消所有固定"来快速重置。
+        </div>
+    </div>
+
+    <div class="faq-item" id="faq10">
+        <div class="question" onclick="toggleFAQ('faq10')">
+            10. 【查料表】时间输入有什么技巧？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">
+            查料表的时间输入支持简写，系统会自动补全为"时:分:秒"格式：<br><br>
+            <b>输入1位数字</b>（如 8）：→ 08:00:00<br>
+            <b>输入2位数字</b>（如 15）：→ 15:00:00<br>
+            <b>输入3位数字</b>（如 830）：→ 08:30:00<br>
+            <b>输入4位数字</b>（如 1530）：→ 15:30:00<br>
+            <b>输入5位或6位数字</b>：会自动按"时:分:秒"补全，秒不足两位自动补0。<br><br>
+            提交时间时会自动校验，如果输入的时间晚于当前系统时间，会提示并修正。
+        </div>
+    </div>
+
+    <div class="faq-item" id="faq11">
+        <div class="question" onclick="toggleFAQ('faq11')">
+            11. 【查料表】点击打钩（✓）是做什么的？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">
+            查料表中每一行都有一个输入列，点击后自动填入"✓"，并记录当前系统时间为该棚的查料时间。 <br>
+            <b>作用</b>：快速标记该棚已经查完料，无需手动输入时间。同时系统会根据放料时间和查料时间自动计算出该棚的吃料用时。<br><br>
+            如果某行需要从计算中剔除（例如该棚不查料），可以<b>长按左侧棚号</b>，该行会标记为绿色"本行不参与计算"，其时间不计入平均。
+        </div>
+    </div>
+
+    <script>
+        function toggleFAQ(id) {
+            var item = document.getElementById(id);
+            var question = item.querySelector('.question');
+            
+            if (item.classList.contains('open')) {
+                item.classList.remove('open');
+            } else {
+                item.classList.add('open');
+            }
+            
+            question.classList.add('read');
+        }
+    </script>
+</body>
+</html>
