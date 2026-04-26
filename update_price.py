@@ -67,10 +67,8 @@ def normalize_date(raw_date):
     return raw_date
 
 def parse_first_price(price_str):
-    """从价格字符串中提取第一个有效数字，用于排序比较"""
     if not price_str:
         return 0.0
-    # 可能含有 ~ 或 -
     parts = re.split(r'[~\-]', price_str)
     for part in parts:
         try:
@@ -80,7 +78,7 @@ def parse_first_price(price_str):
     return 0.0
 
 def sort_items(items):
-    """组内排序：河虾按价格降序，其他按大→中→小"""
+    """组内排序：河虾按价格降序，其他按大→中→小；河虾组整体排最后"""
     def base_name(item):
         name = item["name"]
         return re.sub(r'[（(][大中小][）)]$', '', name).strip()
@@ -95,15 +93,13 @@ def sort_items(items):
             group_order.append(base)
         grouped[base].append(item)
 
-    # 对于每个组，根据内容选择排序方式
+    # 组内排序
     spec_order = {'大': 0, '中': 1, '小': 2}
     for base in grouped:
         lst = grouped[base]
         if '河虾' in base:
-            # 河虾按价格降序
             lst.sort(key=lambda x: parse_first_price(x["price"]), reverse=True)
         else:
-            # 其他按大→中→小排序
             def spec_key(item):
                 name = item["name"]
                 match = re.search(r'[（(]([大中小])[）)]$', name)
@@ -112,7 +108,12 @@ def sort_items(items):
                 return 99
             lst.sort(key=spec_key)
 
-    # 恢复原始组顺序
+    # 河虾组移到末尾
+    if '河虾' in group_order:
+        group_order.remove('河虾')
+        group_order.append('河虾')
+
+    # 恢复组顺序
     result = []
     for base in group_order:
         result.extend(grouped[base])
