@@ -66,22 +66,26 @@ def normalize_date(raw_date):
         return f"{year}/{int(month):02d}/{int(day):02d}"
     return raw_date
 
+def parse_first_price(price_str):
+    """从价格字符串中提取第一个有效数字，用于排序比较"""
+    if not price_str:
+        return 0.0
+    # 可能含有 ~ 或 -
+    parts = re.split(r'[~\-]', price_str)
+    for part in parts:
+        try:
+            return float(part.strip())
+        except ValueError:
+            continue
+    return 0.0
+
 def sort_items(items):
-    """对同一分类内的商品：保持不同品类的出现顺序，但同一品类内部按大->中->小排列"""
-    # 提取基础名称（去掉末尾的（大）/（中）/（小））
+    """组内排序：河虾按价格降序，其他按大→中→小"""
     def base_name(item):
         name = item["name"]
         return re.sub(r'[（(][大中小][）)]$', '', name).strip()
-    
-    spec_order = {'大': 0, '中': 1, '小': 2}
-    def spec_key(item):
-        name = item["name"]
-        match = re.search(r'[（(]([大中小])[）)]$', name)
-        if match:
-            return spec_order.get(match.group(1), 99)
-        return 99
 
-    # 按基础名称分组，并记录首次出现的顺序
+    # 分组并记录首次出现顺序
     grouped = {}
     group_order = []
     for item in items:
@@ -90,12 +94,25 @@ def sort_items(items):
             grouped[base] = []
             group_order.append(base)
         grouped[base].append(item)
-    
-    # 每个组内部按规格排序
+
+    # 对于每个组，根据内容选择排序方式
+    spec_order = {'大': 0, '中': 1, '小': 2}
     for base in grouped:
-        grouped[base].sort(key=spec_key)
-    
-    # 按组出现顺序重新拼接
+        lst = grouped[base]
+        if '河虾' in base:
+            # 河虾按价格降序
+            lst.sort(key=lambda x: parse_first_price(x["price"]), reverse=True)
+        else:
+            # 其他按大→中→小排序
+            def spec_key(item):
+                name = item["name"]
+                match = re.search(r'[（(]([大中小])[）)]$', name)
+                if match:
+                    return spec_order.get(match.group(1), 99)
+                return 99
+            lst.sort(key=spec_key)
+
+    # 恢复原始组顺序
     result = []
     for base in group_order:
         result.extend(grouped[base])
@@ -155,7 +172,6 @@ def main():
                 if len(row) >= 6 and row[4] and row[5]:
                     process_item(row[4], row[5], current_cat["items"])
 
-    # 排序：同一品类内部大中小
     for cat in categories:
         cat["items"] = sort_items(cat["items"])
 
