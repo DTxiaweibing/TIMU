@@ -56,6 +56,36 @@ def process_item(name, price, target_list):
             "price": prices[i]
         })
 
+def process_lobster(row, target_list, last_price):
+    """处理龙虾类数据（A列品名，B列规格，C列价格）"""
+    if len(row) < 3:
+        return last_price
+    
+    name = row[0].strip() if row[0] else ''
+    spec = row[1].strip() if len(row) > 1 and row[1] else ''
+    price_str = row[2].strip() if len(row) > 2 and row[2] else ''
+    
+    # 必须品名包含“龙虾”且规格不为空
+    if '龙虾' not in name or not spec:
+        return last_price
+    
+    # 如果当前行没有价格，复用上一行的价格
+    if not price_str:
+        price_str = last_price
+    else:
+        price_str = price_str.replace('-', '~')
+        last_price = price_str  # 更新“上一行价格”
+    
+    # 跳过没有价格的无效行
+    if not price_str:
+        return last_price
+    
+    target_list.append({
+        "name": f"龙虾（{spec}）",
+        "price": price_str
+    })
+    return last_price
+
 def normalize_date(raw_date):
     """把各种日期格式统一成 yyyy/MM/dd"""
     if not raw_date:
@@ -83,6 +113,8 @@ def main():
     categories = []
     date_str = ""
     current_cat = None
+    in_lobster = False          # 是否在龙虾区域内
+    lobster_last_price = ""     # 龙虾区域上一行的价格
     
     # 2. 逐行解析
     for row in rows:
@@ -105,6 +137,13 @@ def main():
             title = first_cell.replace('：', ':').split(':')[0].strip()
             current_cat = {"title": title, "items": []}
             categories.append(current_cat)
+            
+            # ✅ 判断是否进入龙虾区域
+            if '龙虾' in title:
+                in_lobster = True
+                lobster_last_price = ""
+            else:
+                in_lobster = False
             continue
         
         # 跳过表头行
@@ -113,18 +152,22 @@ def main():
         
         # 数据行处理
         if current_cat is not None:
-            # 左列 (列1: 品名, 列2: 价格)
-            if len(row) >= 3 and row[1] and row[2]:
-                process_item(row[1], row[2], current_cat["items"])
-            # 右列 (列4: 品名, 列5: 价格)
-            if len(row) >= 6 and row[4] and row[5]:
-                process_item(row[4], row[5], current_cat["items"])
+            if in_lobster:
+                # ✅ 龙虾专用解析
+                lobster_last_price = process_lobster(row, current_cat["items"], lobster_last_price)
+            else:
+                # 通用解析：左列 (列1: 品名, 列2: 价格)
+                if len(row) >= 3 and row[1] and row[2]:
+                    process_item(row[1], row[2], current_cat["items"])
+                # 右列 (列4: 品名, 列5: 价格)
+                if len(row) >= 6 and row[4] and row[5]:
+                    process_item(row[4], row[5], current_cat["items"])
     
     # 3. 给每个分类内的商品按名称排序（河虾就会集中到一起）
     for cat in categories:
         cat["items"].sort(key=lambda x: x["name"])
     
-    # 4. 生成 JSON (不再过滤空分类，保留主标题)
+    # 4. 生成 JSON
     result = {"date": date_str, "categories": categories}
     with open(JSON_FILE, 'w', encoding='utf-8') as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
