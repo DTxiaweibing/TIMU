@@ -15,16 +15,6 @@ def is_lobster(name):
     lobsters = ['龙虾', '澳洲龙虾', '波士顿龙虾', '小青龙', '花龙', '青龙']
     return any(lob in name for lob in lobsters)
 
-def is_shrimp(name):
-    """判断是否是虾类（需要按大（贵）→小（便宜）分配）"""
-    shrimps = ['虾']
-    return any(s in name for s in shrimps)
-
-def is_fish(name):
-    """判断是否是鱼类（大鱼便宜，小鱼贵）"""
-    fishes = ['鱼']
-    return any(f in name for f in fishes)
-
 def process_item(name, price, target_list):
     original_name = name.strip()
     cleaned_name = original_name.replace('（', '(').replace('）', ')').strip()
@@ -45,34 +35,20 @@ def process_item(name, price, target_list):
     base_name = re.sub(r'\([^)]*\)', '', cleaned_name).strip()
 
     if price_count == 2:
-        # 比较价格大小，决定哪个是大哪个是小
+        # 统一规则：大的价格大，小的价格小
         try:
             p1 = float(prices[0])
             p2 = float(prices[1])
         except ValueError:
-            # 解析不了就保留原样
             target_list.append({"name": original_name, "price": price})
             return
 
-        if p1 == p2:
+        if p1 >= p2:
             specs = ['大', '小']
             ordered_prices = prices
-        elif is_fish(cleaned_name):
-            # 鱼：大鱼便宜，小鱼贵，所以价格低的为大
-            if p1 < p2:
-                specs = ['大', '小']
-                ordered_prices = prices
-            else:
-                specs = ['小', '大']
-                ordered_prices = [prices[1], prices[0]]
         else:
-            # 虾或其他：大虾贵，小虾便宜，所以价格高的为大
-            if p1 > p2:
-                specs = ['大', '小']
-                ordered_prices = prices
-            else:
-                specs = ['小', '大']
-                ordered_prices = [prices[1], prices[0]]
+            specs = ['小', '大']
+            ordered_prices = [prices[1], prices[0]]
 
         for i, spec in enumerate(specs):
             target_list.append({
@@ -82,23 +58,17 @@ def process_item(name, price, target_list):
         return
 
     if price_count == 3:
-        # 三个价格：鱼类按价格升序（低-中-高）→大-中-小，虾类按降序（高-中-低）→大-中-小
+        # 三个价格：按降序（高→中→低）对应大→中→小
         try:
             p_vals = [float(p) for p in prices]
         except ValueError:
             target_list.append({"name": original_name, "price": price})
             return
 
-        if is_fish(cleaned_name):
-            # 鱼：低=大，中=中，高=小
-            sorted_indices = sorted(range(3), key=lambda i: p_vals[i])  # 升序
-            spec_map = {sorted_indices[0]: '大', sorted_indices[1]: '中', sorted_indices[2]: '小'}
-        else:
-            # 虾：高=大，中=中，低=小
-            sorted_indices = sorted(range(3), key=lambda i: p_vals[i], reverse=True)  # 降序
-            spec_map = {sorted_indices[0]: '大', sorted_indices[1]: '中', sorted_indices[2]: '小'}
-
+        sorted_indices = sorted(range(3), key=lambda i: p_vals[i], reverse=True)
+        spec_map = {sorted_indices[0]: '大', sorted_indices[1]: '中', sorted_indices[2]: '小'}
         specs = [spec_map[i] for i in range(3)]
+
         for i, spec in enumerate(specs):
             target_list.append({
                 "name": f"{base_name}（{spec}）",
@@ -149,18 +119,12 @@ def parse_first_price(price_str):
     return 0.0
 
 def extract_base_name(item_name):
-    """提取商品的基础名称，用于分组"""
     name = item_name.strip()
-    # 去掉末尾的（大）（中）（小）
     name = re.sub(r'[（(][大中小][）)]$', '', name).strip()
-    # 对于河虾，去掉头数，如(100头)、(130头)
     name = re.sub(r'\(\d+头\)$', '', name).strip()
     return name
 
 def sort_items(items):
-    """组内排序：河虾组整体放最后，内部按价格降序；
-       其他虾按大中小排列；鱼类按大中小（价格已在上一步修正）"""
-    # 分组并记录首次出现顺序
     grouped = {}
     group_order = []
     for item in items:
@@ -170,14 +134,12 @@ def sort_items(items):
             group_order.append(base)
         grouped[base].append(item)
 
-    # 组内排序
     spec_order = {'大': 0, '中': 1, '小': 2}
     for base in grouped:
         lst = grouped[base]
         if '河虾' in base:
             lst.sort(key=lambda x: parse_first_price(x["price"]), reverse=True)
         else:
-            # 按大中小的索引排序
             def spec_key(item):
                 name = item["name"]
                 match = re.search(r'[（(]([大中小])[）)]$', name)
@@ -186,7 +148,6 @@ def sort_items(items):
                 return 99
             lst.sort(key=spec_key)
 
-    # 河虾组移动到末尾
     if '河虾' in group_order:
         group_order.remove('河虾')
         group_order.append('河虾')
