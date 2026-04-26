@@ -58,13 +58,14 @@ def process_item(name, price, target_list):
         return
 
     if price_count == 3:
-        # 三个价格：按降序（高→中→低）对应大→中→小
+        # 三个价格：也统一按大的价格大，小的价格小
         try:
             p_vals = [float(p) for p in prices]
         except ValueError:
             target_list.append({"name": original_name, "price": price})
             return
 
+        # 按价格降序：高→中→低，对应大→中→小
         sorted_indices = sorted(range(3), key=lambda i: p_vals[i], reverse=True)
         spec_map = {sorted_indices[0]: '大', sorted_indices[1]: '中', sorted_indices[2]: '小'}
         specs = [spec_map[i] for i in range(3)]
