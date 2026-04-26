@@ -35,7 +35,6 @@ def process_item(name, price, target_list):
     base_name = re.sub(r'\([^)]*\)', '', cleaned_name).strip()
 
     if price_count == 2:
-        # 统一规则：大的价格大，小的价格小
         try:
             p1 = float(prices[0])
             p2 = float(prices[1])
@@ -43,29 +42,28 @@ def process_item(name, price, target_list):
             target_list.append({"name": original_name, "price": price})
             return
 
+        # 价高为“大”，价低为“小”
         if p1 >= p2:
-            specs = ['大', '小']
-            ordered_prices = prices
+            sorted_prices = [prices[0], prices[1]]
         else:
-            specs = ['小', '大']
-            ordered_prices = [prices[1], prices[0]]
+            sorted_prices = [prices[1], prices[0]]
 
+        specs = ['大', '小']
         for i, spec in enumerate(specs):
             target_list.append({
                 "name": f"{base_name}（{spec}）",
-                "price": ordered_prices[i]
+                "price": sorted_prices[i]
             })
         return
 
     if price_count == 3:
-        # 三个价格：也统一按大的价格大，小的价格小
         try:
             p_vals = [float(p) for p in prices]
         except ValueError:
             target_list.append({"name": original_name, "price": price})
             return
 
-        # 按价格降序：高→中→低，对应大→中→小
+        # 降序：高→中→低，对应大→中→小
         sorted_indices = sorted(range(3), key=lambda i: p_vals[i], reverse=True)
         spec_map = {sorted_indices[0]: '大', sorted_indices[1]: '中', sorted_indices[2]: '小'}
         specs = [spec_map[i] for i in range(3)]
