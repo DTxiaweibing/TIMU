@@ -1,0 +1,27 @@
+name: Update Banner Version
+
+on:
+  push:
+    paths:
+      - 'banner.json'
+      - 'banners/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Generate new version
+        run: echo "$(date +'%Y%m%d%H%M%S')" > banner_version.txt
+
+      - name: Commit and push version file
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add banner_version.txt
+          git diff --staged --quiet || (git commit -m "Update banner version" && git push)
