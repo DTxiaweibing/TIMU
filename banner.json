@@ -1,0 +1,18 @@
+[
+  {
+    "imageUrl": "https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/banners/banner_1.jpg",
+    "linkUrl": "https://www.example.com/page1"
+  },
+    {
+    "imageUrl": "https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/banners/banner_1.jpg",
+    "linkUrl": "https://www.example.com/page2"
+  },
+    {
+    "imageUrl": "https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/banners/banner_1.jpg",
+    "linkUrl": "https://www.example.com/page3"
+  },
+  {
+    "imageUrl": "https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/banners/banner_2.jpg",
+    "linkUrl": "https://www.example.com/page4"
+  }
+]
