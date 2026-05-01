@@ -1,27 +1,66 @@
-name: Update Banner Version
+name: Update Banner with MD5
 
 on:
   push:
     paths:
-      - 'banner.json'
       - 'banners/**'
+      - 'banner.json'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  update-version:
+  update-banner:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
 
-      - name: Generate new version
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Generate MD5 and update banner.json
+        run: |
+          import hashlib
+          import json
+          import os
+          import glob
+
+          # 读取 banner.json
+          with open('banner.json', 'r', encoding='utf-8') as f:
+              banners = json.load(f)
+
+          # 遍历每个广告对象
+          for item in banners:
+              image_url = item.get('imageUrl', '')
+              # 从 URL 中提取文件名
+              filename = image_url.split('/')[-1]
+              filepath = os.path.join('banners', filename)
+              
+              if os.path.exists(filepath):
+                  # 计算 MD5
+                  with open(filepath, 'rb') as img_file:
+                      md5 = hashlib.md5(img_file.read()).hexdigest()
+                  item['v'] = md5
+                  print(f"✅ {filename} -> MD5: {md5}")
+              else:
+                  print(f"⚠️  文件不存在: {filepath}")
+
+          # 写回 banner.json
+          with open('banner.json', 'w', encoding='utf-8') as f:
+              json.dump(banners, f, ensure_ascii=False, indent=2)
+
+          print("✅ banner.json 已更新")
+        shell: python
+
+      - name: Update banner version
         run: echo "$(date +'%Y%m%d%H%M%S')" > banner_version.txt
 
-      - name: Commit and push version file
+      - name: Commit and push changes
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add banner_version.txt
-          git diff --staged --quiet || (git commit -m "Update banner version" && git push)
+          git add banner.json banner_version.txt
+          git diff --staged --quiet || (git commit -m "Auto update banner MD5" && git push)
