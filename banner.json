@@ -1,18 +1,22 @@
 [
   {
     "imageUrl": "https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/banners/banner_1.jpg",
-    "linkUrl": "https://www.example.com/page1"
+    "linkUrl": "https://dtxiaweibing.github.io/TIMU/promo/zhaomu.html",
+    "v": "20260501-1"
   },
-    {
+  {
     "imageUrl": "https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/banners/banner_1.jpg",
-    "linkUrl": "https://www.example.com/page2"
+    "linkUrl": "https://dtxiaweibing.github.io/TIMU/promo/event1.html",
+    "v": "20260501-2"
   },
-    {
+  {
     "imageUrl": "https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/banners/banner_1.jpg",
-    "linkUrl": "https://www.example.com/page3"
+    "linkUrl": "https://dtxiaweibing.github.io/TIMU/promo/event2.html",
+    "v": "20260501-3"
   },
   {
     "imageUrl": "https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/banners/banner_2.jpg",
-    "linkUrl": "https://www.example.com/page4"
+    "linkUrl": "https://dtxiaweibing.github.io/TIMU/promo/event3.html",
+    "v": "20260501-4"
   }
 ]
