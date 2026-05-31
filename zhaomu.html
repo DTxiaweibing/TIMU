@@ -2,149 +2,351 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>小棚养虾 · 养殖专家招募</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>南美白对虾水质决策助手</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', -apple-system, 'Roboto', sans-serif;
+        }
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: #f4f9fb;
-            color: #1e2f4d;
-            line-height: 1.6;
-            padding: 20px 16px;
+            background: #e9f5e9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
         }
         .container {
             max-width: 600px;
-            margin: 0 auto;
+            width: 100%;
             background: white;
-            border-radius: 20px;
-            padding: 24px 20px;
-            box-shadow: 0 8px 24px rgba(0,40,40,0.06);
+            border-radius: 32px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            padding: 24px 20px 32px;
         }
-        h2 {
-            font-size: 1.8rem;
-            color: #0a7e8c;
-            margin-bottom: 8px;
-            text-align: center;
+        h1 {
+            font-size: 1.7rem;
+            margin: 0 0 6px 0;
+            color: #1a5f2a;
         }
-        .subtitle {
-            text-align: center;
-            color: #5f7d8c;
-            margin-bottom: 24px;
-            font-size: 0.95rem;
+        .sub {
+            color: #2c6e3c;
+            border-left: 4px solid #4caf50;
+            padding-left: 12px;
+            margin-bottom: 28px;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
-        .section {
+        .param-card {
+            background: #f8faf7;
+            border-radius: 24px;
+            padding: 12px 18px;
             margin-bottom: 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .section-title {
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #0a5e6c;
-            margin-bottom: 8px;
+        .param-label {
+            font-weight: 600;
+            margin-bottom: 6px;
             display: flex;
+            justify-content: space-between;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border-radius: 40px;
+            border: 1px solid #cbd5cb;
+            background: white;
+            margin-top: 4px;
+        }
+        .slider-row {
+            display: flex;
+            gap: 12px;
             align-items: center;
         }
-        .section-title::before {
-            content: "🦐";
-            margin-right: 8px;
-            font-size: 1.4rem;
+        input[type="range"] {
+            flex: 1;
+            padding: 0;
         }
-        .condition-list {
-            list-style: none;
-            padding-left: 0;
-        }
-        .condition-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid #e0edf2;
-            display: flex;
-            align-items: flex-start;
-        }
-        .condition-list li::before {
-            content: "✅";
-            margin-right: 10px;
-            flex-shrink: 0;
-        }
-        .note {
-            background: #fff3e0;
-            border-left: 4px solid #ff9800;
-            padding: 12px 16px;
-            border-radius: 8px;
-            color: #5d4037;
-            margin: 16px 0;
-            font-size: 0.95rem;
-        }
-        .contact-box {
-            background: #e8f5e9;
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-            margin-top: 20px;
-        }
-        .contact-box a {
-            color: #2e7d32;
-            font-weight: bold;
-            font-size: 1.3rem;
-            text-decoration: none;
-        }
-        .cta-text {
-            margin-bottom: 8px;
+        .value-display {
+            background: #e0ece0;
+            padding: 4px 12px;
+            border-radius: 30px;
             font-weight: 600;
+            min-width: 65px;
+            text-align: center;
+        }
+        .result-box {
+            background: #1e2a24;
+            color: #e6f7e6;
+            border-radius: 28px;
+            padding: 20px;
+            margin: 20px 0 20px;
+        }
+        .nh3-bar {
+            background: #3a4d42;
+            border-radius: 40px;
+            height: 12px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+        .nh3-fill {
+            width: 0%;
+            height: 100%;
+            background: #ffb74d;
+            border-radius: 40px;
+        }
+        .danger-fill {
+            background: #f44336;
+        }
+        .action-list {
+            background: #2c3e2f;
+            border-radius: 20px;
+            padding: 8px 16px;
+            margin-top: 16px;
+        }
+        .action-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #4a6b4e;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .badge {
+            background: #ff9800;
+            color: #1e2a24;
+            border-radius: 40px;
+            padding: 2px 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .warning-text {
+            color: #ffb347;
+            font-weight: bold;
         }
         hr {
-            border: none;
-            border-top: 1px solid #d0e0e8;
-            margin: 24px 0;
+            border-color: #406645;
+            margin: 16px 0;
         }
-        .footer-note {
+        footer {
+            font-size: 0.7rem;
             text-align: center;
-            font-size: 0.8rem;
-            color: #8899a6;
-            margin-top: 12px;
+            color: #5b7a5e;
+            margin-top: 20px;
+        }
+        button {
+            background: #2e7d32;
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 40px;
+            width: 100%;
+            font-size: 1rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>养殖专家招募</h2>
-        <p class="subtitle">诚邀一线实战专家，共建养虾技术交流平台</p>
+<div class="container">
+    <h1>🦐 对虾放苗助手</h1>
+    <div class="sub">pH · 氨氮 · 温度 · 盐度 → 实战决策</div>
 
-        <div class="section">
-            <div class="section-title">我们寻找这样的你</div>
-            <ul class="condition-list">
-                <li>具有 <strong>5年以上</strong> 南美白对虾养殖一线经验</li>
-                <li>在本地养殖圈有一定知名度，乐于分享技术</li>
-                <li>愿意公开手机号，为养殖户提供电话咨询</li>
-                <li>不卖动保，不推销产品，只凭技术说话</li>
-            </ul>
-        </div>
-
-        <div class="note">
-            ⚠️ <strong>特别说明</strong><br>
-            我们不要“动保老师”——那些只会卖药、没有实战经验的人请勿打扰。<br>
-            我们找的是真正下过塘、养过虾、赔过钱、赚过钱的老养殖户。
-        </div>
-
-        <div class="section">
-            <div class="section-title">你将获得</div>
-            <ul class="condition-list">
-                <li>展示在“小棚养虾”App 专家咨询板块</li>
-                <li>成为当地养殖户信任的技术顾问</li>
-                <li>未来可参与付费咨询、技术培训等合作</li>
-                <li>与更多实战高手交流，共同提升</li>
-            </ul>
-        </div>
-
-        <hr>
-
-        <div class="contact-box">
-            <p class="cta-text">📞 如果你符合条件，欢迎联系我们</p>
-            <p style="font-size:1.1rem; margin-bottom:6px;">联系电话：<strong>18052906788</strong></p>
-            <p style="color:#555;">（微信同号，添加请备注“专家招募”）</p>
-        </div>
-
-        <div class="footer-note">
-            * 本招募长期有效，我们会在审核后尽快联系您。
-        </div>
+    <!-- 输入区 -->
+    <div class="param-card">
+        <div class="param-label">🌡️ 水温 (℃) <span id="tempValDisplay">28.0</span></div>
+        <input type="range" id="tempSlider" min="20" max="33" step="0.5" value="28">
+        <div style="font-size: 0.75rem; color:#5f7c62;">放苗适温 20~32℃</div>
     </div>
+
+    <div class="param-card">
+        <div class="param-label">🧪 pH 值 <span id="phValDisplay">8.2</span></div>
+        <input type="range" id="phSlider" min="7.2" max="9.4" step="0.02" value="8.2">
+    </div>
+
+    <div class="param-card">
+        <div class="param-label">🧂 盐度 (‰) <span id="salValDisplay">20</span></div>
+        <input type="range" id="salSlider" min="0" max="40" step="1" value="20">
+        <div style="font-size:0.75rem;">淡水&lt;5 &nbsp;|&nbsp; 适宜20~30</div>
+    </div>
+
+    <div class="param-card">
+        <div class="param-label">⚗️ 总氨氮 TAN (mg/L) <span id="tanValDisplay">0.50</span></div>
+        <input type="range" id="tanSlider" min="0" max="4.0" step="0.02" value="0.5">
+    </div>
+
+    <!-- 结果显示区 -->
+    <div class="result-box" id="resultBox">
+        <div style="font-weight:bold;">📊 毒性氨 (NH₃)</div>
+        <div id="nh3Text">计算中...</div>
+        <div class="nh3-bar"><div class="nh3-fill" id="nh3Fill"></div></div>
+        <div id="nh3SafeText">安全阈值: -- mg/L</div>
+        <div class="action-list" id="actionContainer">
+            <div>⚙️ 处理方案</div>
+            <div id="actionList">等待输入...</div>
+        </div>
+        <div id="warnings" style="margin-top: 12px;"></div>
+    </div>
+    <footer>模型基于盐度校正 + 实战pH干预阈值 | 乳酸菌用量按pH梯度</footer>
+</div>
+
+<script>
+    // 盐度校正系数 (针对非离子氨安全阈值)
+    function getSalinityFactor(sal) {
+        if (sal < 5) return 0.45;
+        if (sal < 10) return 0.65;
+        if (sal < 20) return 0.85;
+        if (sal <= 30) return 1.0;
+        return 0.85;
+    }
+
+    // 计算 pKa (温度依赖)
+    function calcPKa(tempC) {
+        let Tk = tempC + 273.15;
+        return 0.09018 + (2729.92 / Tk);
+    }
+
+    // 计算当前非离子氨 NH3 (mg/L)
+    function calcNH3(pH, tempC, tan, salinity) {
+        let pKa = calcPKa(tempC);
+        let ratio = Math.pow(10, pKa - pH) + 1;
+        return tan / ratio;
+    }
+
+    // 计算当前总氨氮安全上限 (基于盐度校正的安全NH3反推)
+    function calcSafeTAN(pH, tempC, salinity) {
+        let safeNH3 = 0.1 * getSalinityFactor(salinity);
+        let pKa = calcPKa(tempC);
+        let ratio = Math.pow(10, pKa - pH) + 1;
+        return safeNH3 * ratio;
+    }
+
+    // 核心决策逻辑（pH干预 + 氨氮超标 + 特殊培藻）
+    function getAdvice(pH, tempC, tan, salinity) {
+        let actions = [];
+        let warnings = [];
+        let safeNH3 = 0.1 * getSalinityFactor(salinity);
+        let currentNH3 = calcNH3(pH, tempC, tan, salinity);
+        let safeTAN = calcSafeTAN(pH, tempC, salinity);
+        let isNH3Exceed = currentNH3 > safeNH3;
+        
+        // ---------- 1. pH 干预优先（实战阈值）----------
+        if (pH >= 9.0) {
+            actions.push("🌞 遮光（遮阳网/腐殖酸钠）");
+            actions.push("🧫 芽孢杆菌 + 光合细菌");
+            actions.push("🥛 自培乳酸菌 100斤/亩");
+            warnings.push("⚠️ pH≥9.0 极度危险！立即大剂量乳酸菌降pH！");
+        } 
+        else if (pH >= 8.8) {
+            actions.push("🌞 遮光");
+            actions.push("🧫 芽孢杆菌 + 光合细菌");
+            actions.push("🥛 自培乳酸菌 50斤/亩");
+            warnings.push("⚠️ pH≥8.8，危险！需乳酸菌快速干预！");
+        }
+        else if (pH >= 8.5) {
+            actions.push("🌞 遮光（控制藻类光合）");
+            warnings.push("📈 pH偏高，遮光即可，暂不泼菌。");
+        }
+        else if (pH <= 8.0) {
+            actions.push("🧱 生石灰（5-10kg/亩）提高pH");
+            warnings.push("📉 pH偏低，影响对虾生长及钙吸收。");
+        }
+        
+        // ---------- 2. 分子氨超标（独立于pH）----------
+        if (isNH3Exceed) {
+            actions.push("🦠 光合细菌 + 红糖（碳源）");
+            warnings.push("💀 分子氨(NH₃)超标！毒性危害极大！");
+        }
+        
+        // ---------- 3. pH≤8.0 且 总氨氮过高（培藻方案）----------
+        if (pH <= 8.0 && tan > 1.0) {
+            actions.push("🌱 补充小球藻种");
+            actions.push("🧪 磷酸二氢钾（培藻吸收氨氮）");
+            warnings.push("🧫 低温/倒藻导致氨氮积累，需尽快培藻。");
+        }
+        
+        // 去重（保留顺序）
+        actions = [...new Map(actions.map(a => [a, a])).values()];
+        
+        if (actions.length === 0) {
+            actions.push("✅ pH和氨氮正常，维持日常管理（增氧/改底）。");
+        }
+        
+        return { actions, warnings, currentNH3, safeNH3, safeTAN, isNH3Exceed };
+    }
+
+    // ---------- UI 绑定与实时刷新 ----------
+    const tempSlider = document.getElementById('tempSlider');
+    const phSlider = document.getElementById('phSlider');
+    const salSlider = document.getElementById('salSlider');
+    const tanSlider = document.getElementById('tanSlider');
+    
+    const tempVal = document.getElementById('tempValDisplay');
+    const phVal = document.getElementById('phValDisplay');
+    const salVal = document.getElementById('salValDisplay');
+    const tanVal = document.getElementById('tanValDisplay');
+    
+    const nh3Text = document.getElementById('nh3Text');
+    const nh3Fill = document.getElementById('nh3Fill');
+    const nh3SafeText = document.getElementById('nh3SafeText');
+    const actionListDiv = document.getElementById('actionList');
+    const warningsDiv = document.getElementById('warnings');
+    
+    function update() {
+        let temp = parseFloat(tempSlider.value);
+        let pH = parseFloat(phSlider.value);
+        let sal = parseFloat(salSlider.value);
+        let tan = parseFloat(tanSlider.value);
+        
+        tempVal.innerText = temp.toFixed(1);
+        phVal.innerText = pH.toFixed(2);
+        salVal.innerText = sal;
+        tanVal.innerText = tan.toFixed(2);
+        
+        // 获取建议
+        let advice = getAdvice(pH, temp, tan, sal);
+        
+        // 显示非离子氨
+        let nh3Val = advice.currentNH3;
+        let safeNh3 = advice.safeNH3;
+        let percent = Math.min(100, (nh3Val / safeNh3) * 100);
+        nh3Text.innerHTML = `<strong>${nh3Val.toFixed(3)} mg/L</strong>  (安全上限 ${safeNh3.toFixed(3)} mg/L)`;
+        nh3Fill.style.width = `${percent}%`;
+        if (nh3Val >= safeNh3) {
+            nh3Fill.classList.add('danger-fill');
+        } else {
+            nh3Fill.classList.remove('danger-fill');
+        }
+        nh3SafeText.innerText = `📌 当前盐度安全阈值 NH₃ ≤ ${safeNh3.toFixed(3)} mg/L`;
+        
+        // 显示处理方案列表
+        if (advice.actions.length > 0) {
+            actionListDiv.innerHTML = advice.actions.map(act => `<div class="action-item">🔹 ${act}</div>`).join('');
+        } else {
+            actionListDiv.innerHTML = '<div>暂无操作建议，数据较平稳</div>';
+        }
+        
+        // 显示警告区域
+        if (advice.warnings.length > 0) {
+            warningsDiv.innerHTML = `<div class="warning-text">⚠️ ${advice.warnings.join('； ')}</div>`;
+        } else {
+            warningsDiv.innerHTML = '<div style="color:#b9ddb5;">✔️ 当前水质指标无紧急预警</div>';
+        }
+        
+        // 额外温度提示
+        if (temp > 32) {
+            warningsDiv.innerHTML += '<div class="warning-text">🔥 水温＞32℃！降温困难，加大增氧/换水或推迟放苗。</div>';
+        } else if (temp < 20) {
+            warningsDiv.innerHTML += '<div class="warning-text">❄️ 水温＜20℃！不适合放苗，需加温。</div>';
+        }
+    }
+    
+    // 监听事件
+    tempSlider.addEventListener('input', update);
+    phSlider.addEventListener('input', update);
+    salSlider.addEventListener('input', update);
+    tanSlider.addEventListener('input', update);
+    
+    update(); // 初始调用
+</script>
 </body>
 </html>
