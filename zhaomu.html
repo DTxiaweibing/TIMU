@@ -3,194 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>南美白对虾水质决策助手</title>
+    <title>对虾水质助手 · 精简版</title>
     <style>
         * {
             box-sizing: border-box;
-            font-family: system-ui, 'Segoe UI', -apple-system, 'Roboto', sans-serif;
+            user-select: none; /* 避免拖动滑块时误选文字，不影响输入 */
         }
         body {
-            background: #e9f5e9;
+            background: #d9e8db;
             margin: 0;
-            padding: 20px;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            padding: 16px;
         }
-        .container {
-            max-width: 600px;
+        /* 主容器：水平并排4个竖条 */
+        .dashboard {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 12px;
+            background: #fefef7;
+            border-radius: 48px;
+            padding: 20px 16px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+            backdrop-filter: blur(0px);
+            max-width: 860px;
             width: 100%;
-            background: white;
-            border-radius: 32px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            padding: 24px 20px 32px;
+            justify-content: center;
         }
-        h1 {
-            font-size: 1.7rem;
-            margin: 0 0 6px 0;
-            color: #1a5f2a;
+        /* 每个参数卡片：竖条布局 */
+        .param-vert {
+            flex: 1;
+            min-width: 70px;
+            background: #f2f7ef;
+            border-radius: 48px;
+            padding: 16px 6px 20px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            box-shadow: inset 0 1px 2px #ffffff80, 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.1s;
         }
-        .sub {
-            color: #2c6e3c;
-            border-left: 4px solid #4caf50;
-            padding-left: 12px;
-            margin-bottom: 28px;
-            font-size: 0.9rem;
+        /* 图标 / 简短标识 */
+        .param-icon {
+            font-size: 1.8rem;
             font-weight: 500;
+            background: #e0ecd9;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 60px;
+            box-shadow: inset 0 1px 2px #fff, 0 2px 4px rgba(0,0,0,0.1);
         }
-        .param-card {
-            background: #f8faf7;
-            border-radius: 24px;
-            padding: 12px 18px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        /* 数值显示区域 */
+        .value-badge {
+            font-weight: 700;
+            font-size: 1.3rem;
+            background: #ffffffcc;
+            backdrop-filter: blur(2px);
+            padding: 4px 12px;
+            border-radius: 60px;
+            color: #1f4f2d;
+            letter-spacing: 1px;
+            width: 100%;
+            text-align: center;
         }
-        .param-label {
-            font-weight: 600;
-            margin-bottom: 6px;
+        /* 竖排滑块容器 */
+        .slider-vertical {
+            writing-mode: bt-lr; /* 兼容性处理 */
+            -webkit-appearance: slider-vertical;
+            width: 28px;
+            height: 140px;
+            margin: 6px 0;
+        }
+        input[type="range"][orient="vertical"] {
+            writing-mode: vertical-lr;
+            direction: rtl;
+            appearance: slider-vertical;
+            width: 28px;
+            height: 140px;
+            padding: 0 5px;
+        }
+        /* 统一滑块竖排样式 */
+        .vert-range {
+            -webkit-appearance: slider-vertical;
+            width: 28px;
+            height: 140px;
+            background: #d3e2cf;
+            border-radius: 20px;
+        }
+        input[type=range] {
+            cursor: pointer;
+        }
+        /* 最小/最大辅助标记（极简） */
+        .limit-tag {
+            font-size: 0.65rem;
+            color: #5f8368;
             display: flex;
             justify-content: space-between;
+            width: 80%;
+            margin-top: 2px;
+            font-weight: 500;
         }
-        input, select {
-            width: 100%;
-            padding: 10px 12px;
-            font-size: 1rem;
+        .unit {
+            font-size: 0.7rem;
+            font-weight: normal;
+            margin-left: 2px;
+        }
+        /* 结果区紧凑放在右侧或者另外处理？为了保持并排干净，把结果缩略显示在下方一行 */
+        .result-strip {
+            background: #1f2c22;
             border-radius: 40px;
-            border: 1px solid #cbd5cb;
-            background: white;
-            margin-top: 4px;
-        }
-        .slider-row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        input[type="range"] {
-            flex: 1;
-            padding: 0;
-        }
-        .value-display {
-            background: #e0ece0;
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-weight: 600;
-            min-width: 65px;
-            text-align: center;
-        }
-        .result-box {
-            background: #1e2a24;
-            color: #e6f7e6;
-            border-radius: 28px;
-            padding: 20px;
-            margin: 20px 0 20px;
-        }
-        .nh3-bar {
-            background: #3a4d42;
-            border-radius: 40px;
-            height: 12px;
-            overflow: hidden;
-            margin: 12px 0;
-        }
-        .nh3-fill {
-            width: 0%;
-            height: 100%;
-            background: #ffb74d;
-            border-radius: 40px;
-        }
-        .danger-fill {
-            background: #f44336;
-        }
-        .action-list {
-            background: #2c3e2f;
-            border-radius: 20px;
-            padding: 8px 16px;
             margin-top: 16px;
-        }
-        .action-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #4a6b4e;
+            padding: 10px 18px;
+            color: #eef4ea;
             display: flex;
-            gap: 10px;
+            flex-wrap: wrap;
             align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 500;
+            gap: 8px;
         }
-        .badge {
-            background: #ff9800;
-            color: #1e2a24;
-            border-radius: 40px;
-            padding: 2px 10px;
-            font-size: 0.75rem;
+        .result-strip span {
+            background: #2c4230;
+            padding: 5px 12px;
+            border-radius: 60px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .action-badge {
+            background: #ffae42;
+            color: #1e2a1c;
+            padding: 5px 12px;
+            border-radius: 60px;
             font-weight: bold;
         }
-        .warning-text {
+        /* 响应式: 如果屏幕宽度<550，竖条稍微缩小间距 */
+        @media (max-width: 580px) {
+            .dashboard {
+                gap: 6px;
+                padding: 12px 8px;
+            }
+            .param-vert {
+                padding: 12px 4px;
+            }
+            .value-badge {
+                font-size: 1rem;
+            }
+            .vert-range {
+                height: 110px;
+            }
+        }
+        .warning-dot {
             color: #ffb347;
-            font-weight: bold;
         }
         hr {
-            border-color: #406645;
-            margin: 16px 0;
+            margin: 0;
         }
-        footer {
-            font-size: 0.7rem;
-            text-align: center;
-            color: #5b7a5e;
-            margin-top: 20px;
-        }
-        button {
-            background: #2e7d32;
-            border: none;
-            color: white;
-            font-weight: bold;
-            padding: 8px 16px;
-            border-radius: 40px;
-            width: 100%;
-            font-size: 1rem;
+        /* 隐藏冗长文字，只保留核心标识 */
+        .hide-text {
+            font-size: 0;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>🦐 对虾放苗助手</h1>
-    <div class="sub">pH · 氨氮 · 温度 · 盐度 → 实战决策</div>
-
-    <!-- 输入区 -->
-    <div class="param-card">
-        <div class="param-label">🌡️ 水温 (℃) <span id="tempValDisplay">28.0</span></div>
-        <input type="range" id="tempSlider" min="20" max="33" step="0.5" value="28">
-        <div style="font-size: 0.75rem; color:#5f7c62;">放苗适温 20~32℃</div>
-    </div>
-
-    <div class="param-card">
-        <div class="param-label">🧪 pH 值 <span id="phValDisplay">8.2</span></div>
-        <input type="range" id="phSlider" min="7.2" max="9.4" step="0.02" value="8.2">
-    </div>
-
-    <div class="param-card">
-        <div class="param-label">🧂 盐度 (‰) <span id="salValDisplay">20</span></div>
-        <input type="range" id="salSlider" min="0" max="40" step="1" value="20">
-        <div style="font-size:0.75rem;">淡水&lt;5 &nbsp;|&nbsp; 适宜20~30</div>
-    </div>
-
-    <div class="param-card">
-        <div class="param-label">⚗️ 总氨氮 TAN (mg/L) <span id="tanValDisplay">0.50</span></div>
-        <input type="range" id="tanSlider" min="0" max="4.0" step="0.02" value="0.5">
-    </div>
-
-    <!-- 结果显示区 -->
-    <div class="result-box" id="resultBox">
-        <div style="font-weight:bold;">📊 毒性氨 (NH₃)</div>
-        <div id="nh3Text">计算中...</div>
-        <div class="nh3-bar"><div class="nh3-fill" id="nh3Fill"></div></div>
-        <div id="nh3SafeText">安全阈值: -- mg/L</div>
-        <div class="action-list" id="actionContainer">
-            <div>⚙️ 处理方案</div>
-            <div id="actionList">等待输入...</div>
+<div style="width:100%; max-width: 960px;">
+    <!-- 四个竖条并排放置：温度、pH、盐度、总氨氮 -->
+    <div class="dashboard">
+        <!-- 温度 -->
+        <div class="param-vert">
+            <div class="param-icon">🌡️</div>
+            <div class="value-badge" id="tempValue">28.0</div>
+            <input type="range" id="tempSlider" class="vert-range" orient="vertical" min="20" max="33" step="0.5" value="28">
+            <div class="limit-tag"><span>20</span><span>33℃</span></div>
         </div>
-        <div id="warnings" style="margin-top: 12px;"></div>
+        <!-- pH -->
+        <div class="param-vert">
+            <div class="param-icon">🧪</div>
+            <div class="value-badge" id="phValue">8.20</div>
+            <input type="range" id="phSlider" class="vert-range" orient="vertical" min="7.2" max="9.4" step="0.02" value="8.2">
+            <div class="limit-tag"><span>7.2</span><span>9.4</span></div>
+        </div>
+        <!-- 盐度 -->
+        <div class="param-vert">
+            <div class="param-icon">🧂</div>
+            <div class="value-badge" id="salValue">20</div>
+            <input type="range" id="salSlider" class="vert-range" orient="vertical" min="0" max="40" step="1" value="20">
+            <div class="limit-tag"><span>0</span><span>40‰</span></div>
+        </div>
+        <!-- 总氨氮 TAN -->
+        <div class="param-vert">
+            <div class="param-icon">⚗️</div>
+            <div class="value-badge" id="tanValue">0.50</div>
+            <input type="range" id="tanSlider" class="vert-range" orient="vertical" min="0" max="4.0" step="0.02" value="0.5">
+            <div class="limit-tag"><span>0</span><span>4.0</span></div>
+        </div>
     </div>
-    <footer>模型基于盐度校正 + 实战pH干预阈值 | 乳酸菌用量按pH梯度</footer>
+
+    <!-- 精简结果栏：仅展示关键决策和毒性氨状态，去除大段说明 -->
+    <div class="result-strip" id="resultStrip">
+        <span>⚡ NH₃: <strong id="nh3Val">0.000</strong> / <span id="nh3Limit">0.100</span> mg/L</span>
+        <span id="alertIcon" style="background:#2c4230;">🔔 处理建议</span>
+        <span id="mainAction" class="action-badge">待更新</span>
+    </div>
+    <!-- 额外小提示精简一行（仅紧急警告） -->
+    <div id="extraWarn" style="font-size:0.75rem; text-align:center; margin-top:8px; color:#b85c00;"></div>
 </div>
 
 <script>
-    // 盐度校正系数 (针对非离子氨安全阈值)
+    // ----- 工具函数（完全保留核心模型）-----
     function getSalinityFactor(sal) {
         if (sal < 5) return 0.45;
         if (sal < 10) return 0.65;
@@ -199,20 +228,17 @@
         return 0.85;
     }
 
-    // 计算 pKa (温度依赖)
     function calcPKa(tempC) {
         let Tk = tempC + 273.15;
         return 0.09018 + (2729.92 / Tk);
     }
 
-    // 计算当前非离子氨 NH3 (mg/L)
     function calcNH3(pH, tempC, tan, salinity) {
         let pKa = calcPKa(tempC);
         let ratio = Math.pow(10, pKa - pH) + 1;
         return tan / ratio;
     }
 
-    // 计算当前总氨氮安全上限 (基于盐度校正的安全NH3反推)
     function calcSafeTAN(pH, tempC, salinity) {
         let safeNH3 = 0.1 * getSalinityFactor(salinity);
         let pKa = calcPKa(tempC);
@@ -220,133 +246,157 @@
         return safeNH3 * ratio;
     }
 
-    // 核心决策逻辑（pH干预 + 氨氮超标 + 特殊培藻）
-    function getAdvice(pH, tempC, tan, salinity) {
-        let actions = [];
-        let warnings = [];
+    // 核心决策：返回精简 action (单条核心操作) + 预警级别
+    function getCompactAdvice(pH, tempC, tan, salinity) {
         let safeNH3 = 0.1 * getSalinityFactor(salinity);
         let currentNH3 = calcNH3(pH, tempC, tan, salinity);
-        let safeTAN = calcSafeTAN(pH, tempC, salinity);
         let isNH3Exceed = currentNH3 > safeNH3;
-        
-        // ---------- 1. pH 干预优先（实战阈值）----------
+        let actionText = "";
+        let urgency = "";   // 用于额外警示
+        let extraNote = "";
+
+        // 优先级规则 (pH干预最优先)
         if (pH >= 9.0) {
-            actions.push("🌞 遮光（遮阳网/腐殖酸钠）");
-            actions.push("🧫 芽孢杆菌 + 光合细菌");
-            actions.push("🥛 自培乳酸菌 100斤/亩");
-            warnings.push("⚠️ pH≥9.0 极度危险！立即大剂量乳酸菌降pH！");
+            actionText = "🔥 遮光+芽孢光合+乳酸菌100斤";
+            urgency = "pH≥9.0紧急!";
         } 
         else if (pH >= 8.8) {
-            actions.push("🌞 遮光");
-            actions.push("🧫 芽孢杆菌 + 光合细菌");
-            actions.push("🥛 自培乳酸菌 50斤/亩");
-            warnings.push("⚠️ pH≥8.8，危险！需乳酸菌快速干预！");
+            actionText = "⚠️ 遮光+芽孢光合+乳酸菌50斤";
+            urgency = "pH≥8.8危险!";
         }
         else if (pH >= 8.5) {
-            actions.push("🌞 遮光（控制藻类光合）");
-            warnings.push("📈 pH偏高，遮光即可，暂不泼菌。");
+            actionText = "🌞 遮光控藻";
+            urgency = "pH偏高";
         }
         else if (pH <= 8.0) {
-            actions.push("🧱 生石灰（5-10kg/亩）提高pH");
-            warnings.push("📉 pH偏低，影响对虾生长及钙吸收。");
+            actionText = "🧱 生石灰提pH";
+            urgency = "pH偏低";
+        }
+        else {
+            actionText = "✓ pH正常";
         }
         
-        // ---------- 2. 分子氨超标（独立于pH）----------
+        // 分子氨超标覆盖或追加
         if (isNH3Exceed) {
-            actions.push("🦠 光合细菌 + 红糖（碳源）");
-            warnings.push("💀 分子氨(NH₃)超标！毒性危害极大！");
+            if (actionText.includes("pH") || actionText === "✓ pH正常") {
+                actionText = "💀 光合菌+红糖 (氨毒超标)";
+            } else {
+                actionText = actionText + " + 光合菌+红糖";
+            }
+            urgency = urgency + " 分子氨中毒";
         }
         
-        // ---------- 3. pH≤8.0 且 总氨氮过高（培藻方案）----------
+        // 特殊: pH≤8.0 且 总氨氮>1.0 培藻方案 (覆盖较低优先级)
         if (pH <= 8.0 && tan > 1.0) {
-            actions.push("🌱 补充小球藻种");
-            actions.push("🧪 磷酸二氢钾（培藻吸收氨氮）");
-            warnings.push("🧫 低温/倒藻导致氨氮积累，需尽快培藻。");
+            actionText = "🌱 小球藻种+磷酸二氢钾 (培藻降氨)";
+            urgency = "藻类不足,氨氮积累";
         }
         
-        // 去重（保留顺序）
-        actions = [...new Map(actions.map(a => [a, a])).values()];
-        
-        if (actions.length === 0) {
-            actions.push("✅ pH和氨氮正常，维持日常管理（增氧/改底）。");
+        // 温度极端提示 (附加提醒)
+        if (tempC > 32) {
+            extraNote = "🌞 水温>32℃! 降温困难,加强增氧/遮阳";
+        } else if (tempC < 20) {
+            extraNote = "❄️ 水温<20℃, 不宜放苗! 需加温";
         }
         
-        return { actions, warnings, currentNH3, safeNH3, safeTAN, isNH3Exceed };
+        // 如果没有任何action特殊处理，保持中性
+        if (!actionText) actionText = "维持管理,监控水质";
+        
+        return { actionText, urgency, currentNH3, safeNH3, extraNote, isNH3Exceed };
     }
 
-    // ---------- UI 绑定与实时刷新 ----------
+    // ----- DOM 元素绑定 (竖条滑块)-----
     const tempSlider = document.getElementById('tempSlider');
     const phSlider = document.getElementById('phSlider');
     const salSlider = document.getElementById('salSlider');
     const tanSlider = document.getElementById('tanSlider');
+
+    const tempValueSpan = document.getElementById('tempValue');
+    const phValueSpan = document.getElementById('phValue');
+    const salValueSpan = document.getElementById('salValue');
+    const tanValueSpan = document.getElementById('tanValue');
     
-    const tempVal = document.getElementById('tempValDisplay');
-    const phVal = document.getElementById('phValDisplay');
-    const salVal = document.getElementById('salValDisplay');
-    const tanVal = document.getElementById('tanValDisplay');
+    const nh3ValSpan = document.getElementById('nh3Val');
+    const nh3LimitSpan = document.getElementById('nh3Limit');
+    const mainActionSpan = document.getElementById('mainAction');
+    const extraWarnDiv = document.getElementById('extraWarn');
+    const alertIconSpan = document.getElementById('alertIcon');
     
-    const nh3Text = document.getElementById('nh3Text');
-    const nh3Fill = document.getElementById('nh3Fill');
-    const nh3SafeText = document.getElementById('nh3SafeText');
-    const actionListDiv = document.getElementById('actionList');
-    const warningsDiv = document.getElementById('warnings');
-    
-    function update() {
+    function updateDashboard() {
+        // 获取数值
         let temp = parseFloat(tempSlider.value);
         let pH = parseFloat(phSlider.value);
         let sal = parseFloat(salSlider.value);
         let tan = parseFloat(tanSlider.value);
         
-        tempVal.innerText = temp.toFixed(1);
-        phVal.innerText = pH.toFixed(2);
-        salVal.innerText = sal;
-        tanVal.innerText = tan.toFixed(2);
+        // 更新显示
+        tempValueSpan.innerText = temp.toFixed(1);
+        phValueSpan.innerText = pH.toFixed(2);
+        salValueSpan.innerText = sal;
+        tanValueSpan.innerText = tan.toFixed(2);
         
-        // 获取建议
-        let advice = getAdvice(pH, temp, tan, sal);
+        // 计算安全阈值及决策
+        let safeNH3_global = 0.1 * getSalinityFactor(sal);
+        let currentNH3 = calcNH3(pH, temp, tan, sal);
+        let advice = getCompactAdvice(pH, temp, tan, sal);
         
-        // 显示非离子氨
-        let nh3Val = advice.currentNH3;
-        let safeNh3 = advice.safeNH3;
-        let percent = Math.min(100, (nh3Val / safeNh3) * 100);
-        nh3Text.innerHTML = `<strong>${nh3Val.toFixed(3)} mg/L</strong>  (安全上限 ${safeNh3.toFixed(3)} mg/L)`;
-        nh3Fill.style.width = `${percent}%`;
-        if (nh3Val >= safeNh3) {
-            nh3Fill.classList.add('danger-fill');
+        // 更新NH₃读数
+        nh3ValSpan.innerText = currentNH3.toFixed(3);
+        nh3LimitSpan.innerText = safeNH3_global.toFixed(3);
+        
+        // 根据毒性是否超标调整显示颜色风格 (在结果栏增加警示感)
+        if (advice.isNH3Exceed || pH >= 8.8) {
+            mainActionSpan.style.background = "#f97316";
+            mainActionSpan.style.color = "#1f2c1c";
+            alertIconSpan.innerHTML = "⚠️ 立即干预";
+        } else if (pH >= 8.5 || (pH <= 8.0 && tan > 1.0)) {
+            mainActionSpan.style.background = "#ffb347";
+            mainActionSpan.style.color = "#2d2b1f";
+            alertIconSpan.innerHTML = "🔔 建议处理";
         } else {
-            nh3Fill.classList.remove('danger-fill');
-        }
-        nh3SafeText.innerText = `📌 当前盐度安全阈值 NH₃ ≤ ${safeNh3.toFixed(3)} mg/L`;
-        
-        // 显示处理方案列表
-        if (advice.actions.length > 0) {
-            actionListDiv.innerHTML = advice.actions.map(act => `<div class="action-item">🔹 ${act}</div>`).join('');
-        } else {
-            actionListDiv.innerHTML = '<div>暂无操作建议，数据较平稳</div>';
-        }
-        
-        // 显示警告区域
-        if (advice.warnings.length > 0) {
-            warningsDiv.innerHTML = `<div class="warning-text">⚠️ ${advice.warnings.join('； ')}</div>`;
-        } else {
-            warningsDiv.innerHTML = '<div style="color:#b9ddb5;">✔️ 当前水质指标无紧急预警</div>';
+            mainActionSpan.style.background = "#528a5e";
+            mainActionSpan.style.color = "#ffffff";
+            alertIconSpan.innerHTML = "✅ 状态良好";
         }
         
-        // 额外温度提示
-        if (temp > 32) {
-            warningsDiv.innerHTML += '<div class="warning-text">🔥 水温＞32℃！降温困难，加大增氧/换水或推迟放苗。</div>';
-        } else if (temp < 20) {
-            warningsDiv.innerHTML += '<div class="warning-text">❄️ 水温＜20℃！不适合放苗，需加温。</div>';
+        // 核心操作文案
+        mainActionSpan.innerText = advice.actionText;
+        
+        // 额外精简提示（仅显示温度极端或特别警告）
+        let warnMsg = "";
+        if (advice.extraNote) warnMsg = advice.extraNote;
+        else if (advice.urgency) warnMsg = advice.urgency;
+        else if (pH >= 8.5 && pH < 8.8) warnMsg = "pH偏高，注意遮光";
+        else if (pH <= 8.0 && pH > 7.6) warnMsg = "pH偏低，生石灰调节";
+        else if (currentNH3 > safeNH3_global * 0.8 && currentNH3 <= safeNH3_global) warnMsg = "氨氮接近阈值，减少投喂";
+        
+        if (warnMsg) {
+            extraWarnDiv.innerText = "🔸 " + warnMsg;
+            extraWarnDiv.style.color = "#d98c2b";
+        } else {
+            extraWarnDiv.innerText = "✔ 参数在可控范围";
+            extraWarnDiv.style.color = "#58856b";
+        }
+        
+        // 极端pH优先级超强提醒
+        if (pH >= 9.0) {
+            extraWarnDiv.innerText = "🔴 pH≥9.0！立即乳酸菌100斤+遮光！";
+            extraWarnDiv.style.color = "#ff4d4d";
+            mainActionSpan.style.background = "#e03a3a";
+        } else if (pH >= 8.8) {
+            extraWarnDiv.innerText = "🟠 pH≥8.8 急需乳酸菌50斤+遮光";
+            extraWarnDiv.style.color = "#ff884d";
         }
     }
     
-    // 监听事件
-    tempSlider.addEventListener('input', update);
-    phSlider.addEventListener('input', update);
-    salSlider.addEventListener('input', update);
-    tanSlider.addEventListener('input', update);
+    // 事件监听
+    tempSlider.addEventListener('input', updateDashboard);
+    phSlider.addEventListener('input', updateDashboard);
+    salSlider.addEventListener('input', updateDashboard);
+    tanSlider.addEventListener('input', updateDashboard);
     
-    update(); // 初始调用
+    // 初始化
+    updateDashboard();
 </script>
 </body>
 </html>
