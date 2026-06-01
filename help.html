@@ -2,478 +2,201 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>对虾养殖决策 · 极简版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小棚养虾 · 使用帮助</title>
     <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #d4e2d0;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', system-ui, 'Roboto', sans-serif;
+            font-family: system-ui, sans-serif;
+            background: #f4f9fb;
             padding: 16px;
+            color: #1e2f4d;
         }
-
-        /* 主卡片背景 */
-        .card {
-            background: #fefcf5;
-            border-radius: 44px;
-            padding: 18px 16px 16px 16px;
-            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.1);
-            max-width: 860px;
-            width: 100%;
-            transition: all 0.2s;
+        h2 {
+            color: #0a7e8c;
+            margin-bottom: 16px;
+            font-size: 1.4rem;
         }
-
-        /* 四个竖条容器: 并排，无图标，底部有文字说明 */
-        .four-bars {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            gap: 10px;
-            justify-content: space-evenly;
-            margin-bottom: 18px;
+        .faq-item {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
         }
-
-        /* 每个参数单元 - 极简竖式 */
-        .param-unit {
-            flex: 1;
-            min-width: 70px;
-            background: #f1f7ef;
-            border-radius: 38px;
-            padding: 12px 4px 10px 4px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            box-shadow: inset 0 1px 2px #ffffffc0, 0 1px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        /* 当前数值显示 (大一点) */
-        .current-val {
-            font-weight: 800;
-            font-size: 1.5rem;
-            background: #ffffffd9;
-            padding: 4px 6px;
-            border-radius: 34px;
-            width: 90%;
-            text-align: center;
-            color: #1c4f2a;
-            letter-spacing: 1px;
-            box-shadow: inset 0 0 0 1px #e2f0dd, 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        /* 竖排滑块样式 (高度进一步压缩) */
-        .vert-slider {
-            -webkit-appearance: slider-vertical;
-            writing-mode: vertical-lr;
-            direction: rtl;
-            appearance: slider-vertical;
-            width: 26px;
-            height: 110px;
-            background: #d2e4ca;
-            border-radius: 30px;
-            margin: 4px 0;
+        .question {
+            padding: 14px 16px;
+            font-weight: 600;
             cursor: pointer;
-        }
-
-        /* 底部文字说明 (温度/盐度/pH/总氨氮) */
-        .param-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            background: #e0ebda;
-            padding: 4px 8px;
-            border-radius: 26px;
-            width: 90%;
-            text-align: center;
-            color: #2c643a;
-            letter-spacing: 0.5px;
-        }
-
-        /* 单位小字辅助 */
-        .unit-sub {
-            font-size: 0.65rem;
-            font-weight: normal;
-            color: #5d7e62;
-        }
-
-        /* 紧凑结果栏 */
-        .info-bar {
-            background: #1f2a1f;
-            border-radius: 38px;
-            padding: 8px 16px;
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            margin-top: 4px;
-            font-size: 0.85rem;
-            font-weight: 500;
+            align-items: center;
+            color: #1e2f4d;
+            transition: background 0.2s;
         }
-
-        .nh3-block {
-            background: #2c4030;
-            padding: 4px 12px;
-            border-radius: 32px;
-            color: #e2f0da;
-            display: inline-flex;
-            align-items: baseline;
-            gap: 6px;
+        .question:active {
+            background: #e6f4f7;
         }
-
-        .action-block {
-            background: #ffae4a;
-            padding: 4px 14px;
-            border-radius: 36px;
-            font-weight: 700;
-            color: #1f311c;
-            white-space: nowrap;
+        .question.read {
+            color: #2e7d32;
         }
-
-        .alert-badge {
-            background: #3c5e44;
-            padding: 4px 12px;
-            border-radius: 36px;
-            color: #ffecb3;
+        .arrow {
+            font-size: 12px;
+            color: #999;
+            transition: transform 0.2s;
         }
-
-        /* 提示行精简 */
-        .extra-tip {
-            font-size: 0.7rem;
-            text-align: center;
-            margin-top: 10px;
-            color: #b46f2a;
-            background: #fff1e0;
-            padding: 5px 12px;
-            border-radius: 60px;
-            display: inline-block;
-            width: auto;
+        .faq-item.open .arrow {
+            transform: rotate(180deg);
         }
-
-        .flex-warning {
-            display: flex;
-            justify-content: center;
+        .answer {
+            padding: 0 16px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            border-top: 1px solid #d9ecf2;
+            color: #445;
+            line-height: 1.6;
         }
-
-        /* 响应式 */
-        @media (max-width: 560px) {
-            .four-bars {
-                gap: 6px;
-            }
-            .current-val {
-                font-size: 1.1rem;
-                padding: 2px 4px;
-            }
-            .vert-slider {
-                height: 90px;
-                width: 24px;
-            }
-            .param-label {
-                font-size: 0.65rem;
-            }
-            .action-block {
-                white-space: normal;
-                font-size: 0.75rem;
-            }
-        }
-
-        /* 隐藏标题图标，全取消，纯文字说明在底部 */
-        .no-icon {
-            /* 没有任何图标 */
+        .faq-item.open .answer {
+            max-height: 600px;
+            padding: 14px 16px;
         }
     </style>
 </head>
 <body>
-<div class="card">
-    <!-- 四个竖条：温度、pH、盐度、总氨氮，无顶部图标，滑动条下方有文字说明 -->
-    <div class="four-bars">
-        <!-- 温度 -->
-        <div class="param-unit">
-            <div class="current-val" id="tempVal">28.0</div>
-            <input type="range" id="tempSlider" class="vert-slider" orient="vertical" min="20" max="33" step="0.5" value="28">
-            <div class="param-label">🌡️ 温度 <span class="unit-sub">(℃)</span></div>
+    <h2>📖 小棚养虾 使用帮助</h2>
+
+    <!-- 行情 -->
+    <div class="faq-item" id="faq1">
+        <div class="question" onclick="toggleFAQ('faq1')">
+            1. 怎么查看当天虾价？
+            <span class="arrow">▼</span>
         </div>
-        <!-- pH -->
-        <div class="param-unit">
-            <div class="current-val" id="phVal">8.20</div>
-            <input type="range" id="phSlider" class="vert-slider" orient="vertical" min="7.2" max="9.4" step="0.02" value="8.2">
-            <div class="param-label">🧪 pH值</div>
+        <div class="answer">点击首页“行情资讯”按钮，App 会自动从网络获取当天的盛阳食品城批发价，并保存在本地。点击任意品种还可以看到历史价格走势。</div>
+    </div>
+
+    <div class="faq-item" id="faq2">
+        <div class="question" onclick="toggleFAQ('faq2')">
+            2. 行情数据是自动更新的吗？
+            <span class="arrow">▼</span>
         </div>
-        <!-- 盐度 -->
-        <div class="param-unit">
-            <div class="current-val" id="salVal">20</div>
-            <input type="range" id="salSlider" class="vert-slider" orient="vertical" min="0" max="40" step="1" value="20">
-            <div class="param-label">🧂 盐度 <span class="unit-sub">(‰)</span></div>
+        <div class="answer">是的，每天打开行情页面会自动抓取最新数据。你也可以点击“刷新”按钮手动更新。历史数据会自动积累，用于走势图分析。</div>
+    </div>
+
+    <!-- 批次与备份 -->
+    <div class="faq-item" id="faq3">
+        <div class="question" onclick="toggleFAQ('faq3')">
+            3. 如何切换养殖批次？
+            <span class="arrow">▼</span>
         </div>
-        <!-- 总氨氮 TAN -->
-        <div class="param-unit">
-            <div class="current-val" id="tanVal">0.50</div>
-            <input type="range" id="tanSlider" class="vert-slider" orient="vertical" min="0" max="4.0" step="0.02" value="0.5">
-            <div class="param-label">⚗️ 总氨氮 <span class="unit-sub">(mg/L)</span></div>
+        <div class="answer">点击首页左上角的菜单按钮 → 选择“批次管理”，可以创建、切换或删除养殖批次。每个批次的数据是独立的。</div>
+    </div>
+
+    <div class="faq-item" id="faq4">
+        <div class="question" onclick="toggleFAQ('faq4')">
+            4. 数据会丢失吗？如何备份？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">所有养殖记录都保存在手机本地数据库中。建议定期在“我的”页面使用备份功能（开发中），或定期将重要的养殖记录截图保存。</div>
+    </div>
+
+    <!-- 拌料计算器 -->
+    <div class="faq-item" id="faq5">
+        <div class="question" onclick="toggleFAQ('faq5')">
+            5. 拌料计算器的核心作用是什么？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">拌料计算器的所有功能，最终目的只有一个：<b>让算料和称料不再出错</b>。<br><br>你只需填好棚号、棚数和各种饲料的用量，系统会自动算好加水量、每棚称料量和平均吃料量。照着称就行了，不再担心算错比例、称错重量。</div>
+    </div>
+
+    <div class="faq-item" id="faq6">
+        <div class="question" onclick="toggleFAQ('faq6')">
+            6. 【拌料计算器】表头长按和短按有什么功能？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">
+            在拌料计算器页面，表头的每一个列名都支持两种操作：<br>
+            <b>短按</b>：直接触发该列的功能（例如点击“水%”列可以修改全局水百分比）。<br>
+            <b>长按</b>：弹出菜单，可以选择“固定此列”或“隐藏此列”。固定后的列会始终显示在左边，不会被左右滑动所遮挡；隐藏的列不再显示，但数据依然保留。<br><br>
+            <i>注意：平板模式下大多数列本来都能完整显示，长按功能主要用于手机端。</i>
         </div>
     </div>
 
-    <!-- 结果栏：紧凑显示毒性氨 + 主要处理动作 + 状态 -->
-    <div class="info-bar">
-        <div class="nh3-block">
-            🧪 NH₃ <strong id="nh3Display">0.000</strong> / <span id="nh3SafeLimit">0.100</span> mg/L
+    <div class="faq-item" id="faq7">
+        <div class="question" onclick="toggleFAQ('faq7')">
+            7. 【拌料计算器】“发酵料”的参与计算是什么意思？
+            <span class="arrow">▼</span>
         </div>
-        <div id="statusChip" class="alert-badge">👀 实时诊断</div>
-        <div id="primaryAction" class="action-block">等待输入</div>
+        <div class="answer">
+            点击“发酵料”表头，可以设置发酵料是否参与两种计算：<br>
+            <b>参与算水</b>：即发酵料的重量是否计入总干料重量，从而影响加水量的计算。<br>
+            <b>参与算料</b>：即发酵料的重量是否计入平均吃料量的计算。<br><br>
+            根据你的拌料习惯灵活选择。设置后所有行的计算结果会自动更新，确保称料数据准确。
+        </div>
     </div>
 
-    <!-- 底部极简短提醒 (无冗余文字) -->
-    <div class="flex-warning" id="extraMsgContainer">
-        <div class="extra-tip" id="extraMessage">✔ 参数平稳</div>
+    <div class="faq-item" id="faq8">
+        <div class="question" onclick="toggleFAQ('faq8')">
+            8. 【拌料计算器】如何固定或隐藏某一列？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">
+            <b>固定列</b>：长按表头 → 选择“固定此列”。该列会移到左侧固定区域，左右滑动时它始终可见。<br>
+            <b>隐藏列</b>：长按表头 → 选择“隐藏此列”。隐藏后列不显示，但数据保留，再次通过菜单可以“显示此列”。<br>
+            在菜单中也可以选择“显示所有列”或“取消所有固定”来快速重置。
+        </div>
     </div>
-</div>
 
-<script>
-    // ---------- 完整养殖决策模型 ----------
-    // 盐度校正因子（低盐更敏感）
-    function getSalinityFactor(sal) {
-        if (sal < 5) return 0.45;
-        if (sal < 10) return 0.65;
-        if (sal < 20) return 0.85;
-        if (sal <= 30) return 1.0;
-        return 0.85;   // >30
-    }
+    <!-- 查料表 -->
+    <div class="faq-item" id="faq9">
+        <div class="question" onclick="toggleFAQ('faq9')">
+            9. 查料表的“吃料用时”是怎么算的？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">输入放料时间和查料时间后，App 会根据总棚数平均分配时间段，算出每一棚的理论开始时间，然后用查料时间减去理论开始时间，得到该棚的吃料用时。</div>
+    </div>
 
-    // pKa 温度公式 (精确)
-    function calcPKa(tempC) {
-        let Tk = tempC + 273.15;
-        return 0.09018 + (2729.92 / Tk);
-    }
+    <div class="faq-item" id="faq10">
+        <div class="question" onclick="toggleFAQ('faq10')">
+            10. 【查料表】时间输入有什么技巧？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">
+            查料表的时间输入支持简写，系统会自动补全为“时:分:秒”格式：<br><br>
+            <b>输入1位数字</b>（如 8）：→ 08:00:00<br>
+            <b>输入2位数字</b>（如 15）：→ 15:00:00<br>
+            <b>输入3位数字</b>（如 830）：→ 08:30:00<br>
+            <b>输入4位数字</b>（如 1530）：→ 15:30:00<br>
+            <b>输入5位或6位数字</b>：会自动按“时:分:秒”补全，秒不足两位自动补0。<br><br>
+            提交时间时会自动校验，如果输入的时间晚于当前系统时间，会提示并修正。
+        </div>
+    </div>
 
-    // 计算当前非离子氨浓度 (mg/L)
-    function calcNH3(pH, tempC, tan, salinity) {
-        let pKa = calcPKa(tempC);
-        let ratio = Math.pow(10, pKa - pH) + 1;
-        return tan / ratio;
-    }
+    <div class="faq-item" id="faq11">
+        <div class="question" onclick="toggleFAQ('faq11')">
+            11. 【查料表】输入栏的勾号（✓）是怎么产生的？
+            <span class="arrow">▼</span>
+        </div>
+        <div class="answer">
+            查料表中每一行都有一个输入列，<b>在该列输入任何内容（任意字符或数字）后，系统会让它自动变成“✓”</b>，并记录当前系统时间为该棚的查料时间。 <br>
+            <b>作用</b>：快速标记该棚已经查完料，无需手动输入时间。同时系统会根据放料时间和查料时间自动计算出该棚的吃料用时。<br><br>
+            如果某行需要从计算中剔除（例如该棚不查料），可以<b>长按左侧棚号</b>，该行会标记为绿色“本行不参与计算”，其时间不计入平均。
+        </div>
+    </div>
 
-    // 计算安全总氨氮上限（仅用于内部参考，决策基于NH3安全阈值）
-    function getSafeNH3Threshold(salinity) {
-        return 0.1 * getSalinityFactor(salinity);
-    }
-
-    // 核心决策: 根据pH、氨氮超标、特殊条件生成【主要处理动作】和【紧急程度】
-    function getDecision(pH, tempC, tan, salinity) {
-        let safeNH3 = getSafeNH3Threshold(salinity);
-        let currentNH3 = calcNH3(pH, tempC, tan, salinity);
-        let isNH3Exceed = currentNH3 > safeNH3;
-        
-        let action = "";
-        let level = "";    // 紧急等级用于状态显示
-        let shortWarn = "";
-        
-        // ----- pH 干预规则（根据最新生产阈值）-----
-        if (pH >= 9.0) {
-            action = "🔥 遮光+芽孢光合+乳酸菌100斤";
-            level = "极度危险 pH≥9.0";
-            shortWarn = "pH≥9.0 立即大剂量乳酸菌！";
-        }
-        else if (pH >= 8.8) {
-            action = "⚠️ 遮光+芽孢光合+乳酸菌50斤";
-            level = "高危 pH≥8.8";
-            shortWarn = "pH≥8.8 乳酸菌50斤+遮光";
-        }
-        else if (pH >= 8.5) {
-            action = "🌞 遮光控藻（降低pH）";
-            level = "pH偏高";
-            shortWarn = "pH偏高，遮阳控藻";
-        }
-        else if (pH <= 8.0) {
-            action = "🧱 泼洒生石灰 (5-10kg/亩)";
-            level = "pH偏低";
-            shortWarn = "pH过低，生石灰提pH";
-        }
-        else {
-            action = "✓ pH正常，维持管理";
-            level = "pH适宜";
-        }
-        
-        // ----- 分子氨超标（独立追加/覆盖更强处理）-----
-        if (isNH3Exceed) {
-            if (action.includes("pH正常") || action === "✓ pH正常，维持管理") {
-                action = "💀 光合细菌+红糖 (降分子氨)";
+    <script>
+        function toggleFAQ(id) {
+            var item = document.getElementById(id);
+            var question = item.querySelector('.question');
+            
+            if (item.classList.contains('open')) {
+                item.classList.remove('open');
             } else {
-                // 已有pH处理动作，追加符号
-                if (!action.includes("+")) {
-                    action = action + " + 光合菌+红糖";
-                } else {
-                    action = action + " / 光合菌红糖";
-                }
+                item.classList.add('open');
             }
-            level = level + " · 氨毒超标";
-            shortWarn = "分子氨超标 " + currentNH3.toFixed(3) + ">" + safeNH3.toFixed(3);
+            
+            question.classList.add('read');
         }
-        
-        // ----- 特殊条件: pH≤8.0 且 总氨氮偏高(＞1.0mg/L) 培藻方案（优先实用）------
-        if (pH <= 8.0 && tan > 1.0) {
-            // 覆盖成更针对性的处理
-            action = "🌱 小球藻种+磷酸二氢钾 (培藻降氨)";
-            level = "倒藻/氨氮积累";
-            shortWarn = "pH低+氨氮高，补藻+磷肥";
-        }
-        
-        // 温度极端情况额外提醒(但不覆盖主要action, 只是增加备注)
-        let tempWarning = "";
-        if (tempC > 32) {
-            tempWarning = "水温>32℃! 遮阳/换水困难，加强增氧";
-            level = level + " · 高温胁迫";
-        } else if (tempC < 20) {
-            tempWarning = "水温<20℃ 不宜放苗，需加温";
-            level = level + " · 低温禁苗";
-        }
-        
-        // 如果既没有特殊动作又未触发任何规则(理论上不该发生)
-        if (!action) action = "监控水质, 常规管理";
-        
-        return { action, level, shortWarn, tempWarning, currentNH3, safeNH3, isNH3Exceed };
-    }
-    
-    // ---------- DOM 绑定 ----------
-    const tempSlider = document.getElementById('tempSlider');
-    const phSlider = document.getElementById('phSlider');
-    const salSlider = document.getElementById('salSlider');
-    const tanSlider = document.getElementById('tanSlider');
-    
-    const tempValSpan = document.getElementById('tempVal');
-    const phValSpan = document.getElementById('phVal');
-    const salValSpan = document.getElementById('salVal');
-    const tanValSpan = document.getElementById('tanVal');
-    
-    const nh3DisplaySpan = document.getElementById('nh3Display');
-    const nh3SafeLimitSpan = document.getElementById('nh3SafeLimit');
-    const primaryActionSpan = document.getElementById('primaryAction');
-    const statusChipSpan = document.getElementById('statusChip');
-    const extraMessageDiv = document.getElementById('extraMessage');
-    
-    // 更新所有UI
-    function refresh() {
-        // 获取当前值
-        let temp = parseFloat(tempSlider.value);
-        let pH = parseFloat(phSlider.value);
-        let sal = parseFloat(salSlider.value);
-        let tan = parseFloat(tanSlider.value);
-        
-        // 更新显示数值
-        tempValSpan.innerText = temp.toFixed(1);
-        phValSpan.innerText = pH.toFixed(2);
-        salValSpan.innerText = sal;
-        tanValSpan.innerText = tan.toFixed(2);
-        
-        // 计算毒性氨和安全阈值
-        let safeNH3 = getSafeNH3Threshold(sal);
-        let currentNH3 = calcNH3(pH, temp, tan, sal);
-        
-        // 显示毒性氨数据
-        nh3DisplaySpan.innerText = currentNH3.toFixed(4);
-        nh3SafeLimitSpan.innerText = safeNH3.toFixed(3);
-        
-        // 获取决策
-        let decision = getDecision(pH, temp, tan, sal);
-        
-        // 更新主要操作按钮文案
-        primaryActionSpan.innerText = decision.action;
-        
-        // 状态芯片颜色 & 文案
-        let isCritical = false;
-        if (pH >= 8.8 || decision.isNH3Exceed || (pH <= 8.0 && tan > 1.2)) {
-            statusChipSpan.style.background = "#d9534f";
-            statusChipSpan.style.color = "white";
-            statusChipSpan.innerText = "🔴 紧急干预";
-            isCritical = true;
-        } else if (pH >= 8.5 || pH <= 8.0 || tan > 1.2) {
-            statusChipSpan.style.background = "#f0ad4e";
-            statusChipSpan.style.color = "#2c2b1f";
-            statusChipSpan.innerText = "⚠️ 建议处理";
-        } else {
-            statusChipSpan.style.background = "#5c9e6b";
-            statusChipSpan.style.color = "#f9f9ef";
-            statusChipSpan.innerText = "✅ 状态良好";
-        }
-        
-        // 额外提示 (简短)
-        let extraMsg = "";
-        if (pH >= 9.0) {
-            extraMsg = "🔴 pH≥9.0 紧急：乳酸菌100斤+遮光+芽孢光合！";
-        } else if (pH >= 8.8) {
-            extraMsg = "🟠 pH≥8.8 乳酸菌50斤+遮光+芽孢光合菌";
-        } else if (pH >= 8.5) {
-            extraMsg = "☀️ pH偏高，建议遮光，必要时泼洒有机酸";
-        } else if (pH <= 8.0 && tan > 1.0) {
-            extraMsg = "🧫 倒藻征兆：小球藻种+磷酸二氢钾培藻降氨";
-        } else if (pH <= 8.0) {
-            extraMsg = "🧱 pH偏低，每亩用生石灰5-10kg调节";
-        } else if (decision.isNH3Exceed) {
-            extraMsg = "⚠️ 分子氨超标！立刻光合菌+红糖，停料增氧";
-        } else if (temp > 32) {
-            extraMsg = "🌞 高温>32℃，增加增氧机、遮阳、加深水位";
-        } else if (temp < 20) {
-            extraMsg = "❄️ 低温<20℃，禁止放苗，需加温至20℃以上";
-        } else if (currentNH3 > safeNH3 * 0.85 && currentNH3 <= safeNH3) {
-            extraMsg = "📈 毒性氨接近上限，减少投喂，适当换水";
-        } else {
-            // 正常情况显示简洁状态
-            if (decision.level && decision.level !== "pH适宜") {
-                extraMsg = `📌 ${decision.level}`;
-            } else {
-                extraMsg = "✔ 水质参数在可控范围，注意日常增氧";
-            }
-        }
-        
-        // 如果包含温度极端警告覆盖优先
-        if (decision.tempWarning) {
-            extraMsg = decision.tempWarning;
-        }
-        
-        // 限制长度，更精简
-        if (extraMsg.length > 48) extraMsg = extraMsg.slice(0, 45) + "…";
-        extraMessageDiv.innerText = extraMsg;
-        
-        // 根据危险等级改变额外消息框背景色
-        if (pH >= 8.8 || decision.isNH3Exceed || (pH <= 7.9 && tan > 1.2)) {
-            extraMessageDiv.style.background = "#ffd9cc";
-            extraMessageDiv.style.color = "#b13b00";
-        } else if (pH >= 8.5 || pH <= 8.0 || tan > 1.0) {
-            extraMessageDiv.style.background = "#fff0cf";
-            extraMessageDiv.style.color = "#b96f10";
-        } else {
-            extraMessageDiv.style.background = "#e1f3e0";
-            extraMessageDiv.style.color = "#2a6840";
-        }
-        
-        // 优化主操作区样式危险凸显
-        if (pH >= 8.8 || decision.isNH3Exceed) {
-            primaryActionSpan.style.background = "#ff7b2c";
-            primaryActionSpan.style.color = "#271d0c";
-        } else if (pH >= 8.5 || pH <= 8.0) {
-            primaryActionSpan.style.background = "#ffbf69";
-            primaryActionSpan.style.color = "#2e3b24";
-        } else {
-            primaryActionSpan.style.background = "#c3e0b3";
-            primaryActionSpan.style.color = "#1e4620";
-        }
-    }
-    
-    // 监听滑块事件
-    tempSlider.addEventListener('input', refresh);
-    phSlider.addEventListener('input', refresh);
-    salSlider.addEventListener('input', refresh);
-    tanSlider.addEventListener('input', refresh);
-    
-    // 初始化
-    refresh();
-</script>
+    </script>
 </body>
 </html>
