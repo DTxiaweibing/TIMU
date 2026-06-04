@@ -91,16 +91,18 @@
             align-items: center;
             margin-bottom: 12px;
         }
+        /* 整体背景改为浅绿色 */
         .advice-container {
-            background: #1f2a1f;
+            background: #e8f5e9;   /* 浅绿色背景 */
             border-radius: 40px;
             padding: 12px 16px;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
+        /* 每个提醒条的行容器：透明背景，仅用于包裹内部内容 */
         .advice-row {
-            background: #2c3e2a;
+            background: transparent;
             border-radius: 36px;
             min-height: 44px;
             overflow-x: auto;
@@ -119,6 +121,7 @@
             background: #b0b0b0;
             border-radius: 4px;
         }
+        /* 文字内容样式：保持原有颜色 */
         .advice-content {
             display: inline-block;
             font-weight: 700;
@@ -130,7 +133,7 @@
         .placeholder {
             color: #7e9a78;
             font-weight: normal;
-            background: #2c3e2a;
+            background: transparent;
         }
         .temp-advice { background: #ffae4a; color: #1f311c; }
         .ph-advice { background: #ffae4a; color: #1f311c; }
@@ -160,13 +163,13 @@
         <div class="param-unit"><div class="current-val" id="dayVal">30</div><input type="range" id="daySlider" class="vert-slider" min="1" max="100" step="1" value="30"><div class="param-label">📅养殖天数</div></div>
     </div>
 
-    <!-- 顶部动态安全阈值显示 -->
     <div class="info-header">
         <span>🧪 NH₃ <strong id="nh3Display">0.000</strong> mg/L</span>
         <span>安全阈值: <strong id="nh3SafeLimit">0.100</strong> mg/L</span>
         <span id="dayHint" style="font-size:0.7rem;">(天数30)</span>
     </div>
 
+    <!-- 整体浅绿色背景容器 -->
     <div class="advice-container">
         <div class="advice-row" id="tempAdviceRow"><div class="advice-content temp-advice" id="tempAdviceText">— — —</div></div>
         <div class="advice-row" id="phAdviceRow"><div class="advice-content ph-advice" id="phAdviceText">— — —</div></div>
@@ -217,11 +220,11 @@
         return "";
     }
 
-    // pH提示
+    // pH提示（阈值改为 ≥8.7）
     function getPhAdvice(pH) {
         if (pH >= 9.0) return `🧪 pH ${pH.toFixed(2)}：遮光+芽孢光合+乳酸菌100斤/亩`;
         if (pH >= 8.8) return `🧪 pH ${pH.toFixed(2)}：遮光+芽孢光合+乳酸菌50斤/亩`;
-        if (pH >= 8.6) return `🧪 pH ${pH.toFixed(2)}：遮光控藻`;
+        if (pH >= 8.7) return `🧪 pH ${pH.toFixed(2)}：遮光控藻`;
         if (pH <= 8.0) return `🧪 pH ${pH.toFixed(2)}：泼洒生石灰5-10kg/亩`;
         return "";
     }
@@ -229,7 +232,7 @@
     // 分子氨提示（超标时带前缀和处理建议）
     function getNh3Advice(nh3, safeNh3, tan, pH) {
         if (nh3 > safeNh3) {
-            let advice = "⚠️ NH₃超：光合菌+红糖，减料增氧";
+            let advice = "⚠️ NH₃超标：光合菌+红糖，减料增氧";
             if (pH <= 8.0 && tan > 1.0) advice += "，小球藻种+磷酸二氢钾培藻";
             return advice;
         }
