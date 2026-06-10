@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>对虾养殖 · 阈值动态版</title>
+    <title>动态水质调控板</title>
     <style>
         * {
             box-sizing: border-box;
@@ -17,16 +17,23 @@
             justify-content: center;
             align-items: center;
             font-family: 'Segoe UI', system-ui, 'Roboto', sans-serif;
-            padding: 12px;
+            padding: 8px;
         }
         .card {
             background: #fefcf5;
             border-radius: 40px;
-            padding: 20px 12px 24px;
+            padding: 20px 12px 20px;
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
             max-width: 100%;
             width: 100%;
             overflow-x: auto;
+        }
+        .title {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #1c4f2a;
+            margin-bottom: 20px;
         }
         .five-bars {
             display: flex;
@@ -57,20 +64,21 @@
             text-align: center;
             color: #1c4f2a;
         }
+        /* 滑块高度降低到320px */
         .vert-slider {
             -webkit-appearance: slider-vertical;
             writing-mode: vertical-lr;
             direction: rtl;
             appearance: slider-vertical;
             width: 24px;
-            height: 260px;
+            height: 320px;
             background: #d2e4ca;
             border-radius: 28px;
             margin: 8px 0;
             cursor: pointer;
         }
         .param-label {
-            font-size: 0.6rem;
+            font-size: 1.05rem;
             font-weight: 700;
             background: #e0ebda;
             padding: 3px 6px;
@@ -80,16 +88,21 @@
             color: #2c643a;
             white-space: nowrap;
         }
+        /* 顶部信息栏：加宽加高 */
         .info-header {
             background: #2c4030;
-            padding: 6px 14px;
-            border-radius: 36px;
-            color: #e2f0da;
-            font-size: 0.8rem;
+            border-radius: 44px;
+            padding: 18px 20px;      /* 大幅增加内边距，变高变宽 */
+            margin-bottom: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            font-size: 1.1rem;        /* 字体加大 */
+            font-weight: 600;
+            color: #e2f0da;
+        }
+        .info-header span {
+            font-size: 1.1rem;
         }
         .advice-container {
             background: #e8f5e9;
@@ -139,31 +152,41 @@
             .five-bars { gap: 4px; }
             .param-unit { min-width: 48px; padding: 8px 2px; }
             .current-val { font-size: 0.9rem; }
-            .vert-slider { height: 200px; width: 20px; }
-            .param-label { font-size: 0.5rem; white-space: normal; }
+            .vert-slider { height: 220px; width: 20px; }
+            .param-label { font-size: 0.85rem; white-space: normal; }
             .advice-content { font-size: 0.75rem; padding: 6px 10px; }
+            .title { font-size: 1.3rem; }
+            .info-header { font-size: 0.9rem; padding: 12px 14px; }
+            .info-header span { font-size: 0.9rem; }
         }
         @media (max-width: 450px) {
-            .vert-slider { height: 160px; width: 18px; }
+            .vert-slider { height: 180px; width: 18px; }
             .current-val { font-size: 0.8rem; }
+            .param-label { font-size: 0.75rem; }
+            .title { font-size: 1.2rem; }
+            .info-header { font-size: 0.8rem; padding: 10px 12px; }
+            .info-header span { font-size: 0.8rem; }
         }
         * { transition: none !important; }
     </style>
 </head>
 <body>
 <div class="card">
+    <div class="title">动态水质调控板</div>
+
     <div class="five-bars">
-        <div class="param-unit"><div class="current-val" id="tempVal">28.0</div><input type="range" id="tempSlider" class="vert-slider" min="20" max="33" step="0.5" value="28"><div class="param-label">🌡️温度<span class="unit-sub">(℃)</span></div></div>
-        <div class="param-unit"><div class="current-val" id="phVal">8.20</div><input type="range" id="phSlider" class="vert-slider" min="7.2" max="9.4" step="0.02" value="8.2"><div class="param-label">🧪pH值</div></div>
-        <div class="param-unit"><div class="current-val" id="salVal">20</div><input type="range" id="salSlider" class="vert-slider" min="0" max="40" step="1" value="20"><div class="param-label">🧂盐度<span class="unit-sub">(‰)</span></div></div>
-        <div class="param-unit"><div class="current-val" id="tanVal">0.50</div><input type="range" id="tanSlider" class="vert-slider" min="0" max="4.0" step="0.02" value="0.5"><div class="param-label">⚗️总氨氮</div></div>
-        <div class="param-unit"><div class="current-val" id="dayVal">30</div><input type="range" id="daySlider" class="vert-slider" min="1" max="100" step="1" value="30"><div class="param-label">📅养殖天数</div></div>
+        <div class="param-unit"><div class="current-val" id="tempVal">28.0</div><input type="range" id="tempSlider" class="vert-slider" min="20" max="33" step="0.5" value="28"><div class="param-label">温度(℃)</div></div>
+        <div class="param-unit"><div class="current-val" id="phVal">8.20</div><input type="range" id="phSlider" class="vert-slider" min="7.2" max="9.4" step="0.02" value="8.2"><div class="param-label">pH值</div></div>
+        <div class="param-unit"><div class="current-val" id="salVal">20</div><input type="range" id="salSlider" class="vert-slider" min="0" max="40" step="1" value="20"><div class="param-label">盐度(‰)</div></div>
+        <div class="param-unit"><div class="current-val" id="tanVal">0.50</div><input type="range" id="tanSlider" class="vert-slider" min="0" max="4.0" step="0.02" value="0.5"><div class="param-label">总氨氮</div></div>
+        <div class="param-unit"><div class="current-val" id="dayVal">30</div><input type="range" id="daySlider" class="vert-slider" min="1" max="100" step="1" value="30"><div class="param-label">养殖天数</div></div>
     </div>
 
+    <!-- 加高加宽后的顶部黑条 -->
     <div class="info-header">
         <span>🧪 NH₃ <strong id="nh3Display">0.000</strong> mg/L</span>
         <span>安全阈值: <strong id="nh3SafeLimit">0.100</strong> mg/L</span>
-        <span id="dayHint" style="font-size:0.7rem;">(天数30)</span>
+        <span id="dayHint" style="font-size:0.85rem;">(天数30)</span>
     </div>
 
     <div class="advice-container">
@@ -181,16 +204,14 @@
         return 1.0;
     }
 
-    // 阶段基础安全阈值（非离子氨 NH₃ mg/L）
-    // 0-15天: 0.05; 16-45天: 0.05→0.20; 46-60天: 0.20→0.35; >60天: 0.35
     function getBaseSafeNH3(day) {
         if (day <= 15) return 0.05;
         if (day <= 45) {
-            let t = (day - 15) / 30.0;  // 0→0, 30→1
+            let t = (day - 15) / 30.0;
             return +(0.05 + t * (0.20 - 0.05)).toFixed(3);
         }
         if (day <= 60) {
-            let t = (day - 45) / 15.0;  // 0→0, 15→1
+            let t = (day - 45) / 15.0;
             return +(0.20 + t * (0.35 - 0.20)).toFixed(3);
         }
         return 0.35;
@@ -235,7 +256,6 @@
         return "";
     }
 
-    // DOM binding
     const tempSlider = document.getElementById('tempSlider');
     const phSlider = document.getElementById('phSlider');
     const salSlider = document.getElementById('salSlider');
