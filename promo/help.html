@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>动态水质调控板</title>
+    <title>密度盐度 + 水质调控 · 上下独立</title>
     <style>
+        /* ===== 全局重置 ===== */
         * {
             box-sizing: border-box;
             user-select: none;
@@ -14,34 +15,103 @@
             margin: 0;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             font-family: 'Segoe UI', system-ui, 'Roboto', sans-serif;
-            padding: 8px;
+            padding: 12px;
         }
+
+        /* ===== 每个卡片独立容器 ===== */
         .card {
             background: #fefcf5;
             border-radius: 40px;
-            padding: 20px 12px 20px;
+            padding: 20px 16px 24px;
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-            max-width: 100%;
             width: 100%;
-            overflow-x: auto;
+            max-width: 600px;  /* 保持适中宽度，不撑满屏幕 */
+            margin-bottom: 24px;
         }
-        .title {
+        .card-title {
             text-align: center;
             font-size: 1.6rem;
             font-weight: bold;
             color: #1c4f2a;
             margin-bottom: 20px;
         }
+
+        /* ============================================================
+           密度盐度转换器（独立样式，取自原文件）
+           ============================================================ */
+        .conv-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffffcc;
+            border-radius: 40px;
+            padding: 8px 18px 8px 22px;
+            margin-bottom: 14px;
+            border: 1px solid #cde0c4;
+        }
+        .conv-item label {
+            font-weight: 700;
+            color: #1f4a2a;
+            font-size: 1rem;
+            min-width: 50px;
+        }
+        .conv-item input {
+            border: none;
+            background: transparent;
+            text-align: right;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0e3a1a;
+            padding: 6px 4px;
+            width: 110px;
+            outline: none;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.15s;
+        }
+        .conv-item input:focus {
+            border-bottom-color: #2b7a4a;
+        }
+        .conv-item .unit {
+            font-size: 0.8rem;
+            color: #3d6b4a;
+            font-weight: 600;
+            min-width: 36px;
+            text-align: right;
+        }
+        .conv-result {
+            background: #dce9d4;
+            border-radius: 40px;
+            padding: 12px 18px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1c4f2a;
+            margin-top: 6px;
+        }
+        .conv-result span {
+            font-weight: 800;
+            color: #0b3d1a;
+        }
+        .conv-hint {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #5a7a62;
+            margin-top: 6px;
+        }
+
+        /* ============================================================
+           水质调控板（独立样式，取自原 help.html）
+           ============================================================ */
         .five-bars {
             display: flex;
             flex-direction: row;
             flex-wrap: nowrap;
             gap: 6px;
             justify-content: space-evenly;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
         .param-unit {
             flex: 1 1 0;
@@ -64,7 +134,6 @@
             text-align: center;
             color: #1c4f2a;
         }
-        /* 滑块高度降低到320px */
         .vert-slider {
             -webkit-appearance: slider-vertical;
             writing-mode: vertical-lr;
@@ -88,22 +157,25 @@
             color: #2c643a;
             white-space: nowrap;
         }
-        /* 顶部信息栏：加宽加高 */
+
         .info-header {
             background: #2c4030;
             border-radius: 44px;
-            padding: 18px 20px;      /* 大幅增加内边距，变高变宽 */
+            padding: 18px 20px;
             margin-bottom: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 1.1rem;        /* 字体加大 */
+            font-size: 1.1rem;
             font-weight: 600;
             color: #e2f0da;
+            flex-wrap: wrap;
+            gap: 6px;
         }
         .info-header span {
             font-size: 1.1rem;
         }
+
         .advice-container {
             background: #e8f5e9;
             border-radius: 40px;
@@ -148,165 +220,372 @@
         .temp-advice { background: #ffae4a; color: #1f311c; }
         .ph-advice { background: #ffae4a; color: #1f311c; }
         .nh3-advice { background: #ff8c5a; color: #1f311c; }
+
+        /* ===== 响应式：手机保持原尺寸，不缩小 ===== */
         @media (max-width: 550px) {
-            .five-bars { gap: 4px; }
-            .param-unit { min-width: 48px; padding: 8px 2px; }
-            .current-val { font-size: 0.9rem; }
-            .vert-slider { height: 220px; width: 20px; }
-            .param-label { font-size: 0.85rem; white-space: normal; }
-            .advice-content { font-size: 0.75rem; padding: 6px 10px; }
-            .title { font-size: 1.3rem; }
-            .info-header { font-size: 0.9rem; padding: 12px 14px; }
-            .info-header span { font-size: 0.9rem; }
+            .card {
+                padding: 16px 12px 20px;
+            }
+            .card-title {
+                font-size: 1.4rem;
+            }
+            .five-bars {
+                gap: 4px;
+            }
+            .param-unit {
+                min-width: 48px;
+                padding: 8px 2px;
+            }
+            .current-val {
+                font-size: 1.0rem;
+            }
+            .vert-slider {
+                height: 320px;   /* 保持原始高度，不缩小 */
+                width: 22px;
+            }
+            .param-label {
+                font-size: 0.9rem;
+                white-space: normal;
+            }
+            .info-header {
+                font-size: 0.95rem;
+                padding: 14px 16px;
+            }
+            .info-header span {
+                font-size: 0.95rem;
+            }
+            .advice-content {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+            .conv-item input {
+                font-size: 1.2rem;
+                width: 90px;
+            }
         }
         @media (max-width: 450px) {
-            .vert-slider { height: 180px; width: 18px; }
-            .current-val { font-size: 0.8rem; }
-            .param-label { font-size: 0.75rem; }
-            .title { font-size: 1.2rem; }
-            .info-header { font-size: 0.8rem; padding: 10px 12px; }
-            .info-header span { font-size: 0.8rem; }
+            .vert-slider {
+                height: 320px;   /* 依然保持320px，不缩小 */
+                width: 20px;
+            }
+            .current-val {
+                font-size: 0.9rem;
+            }
+            .param-label {
+                font-size: 0.8rem;
+            }
+            .card-title {
+                font-size: 1.2rem;
+            }
+            .info-header {
+                font-size: 0.85rem;
+                padding: 10px 12px;
+            }
+            .info-header span {
+                font-size: 0.85rem;
+            }
         }
-        * { transition: none !important; }
+        /* 禁止所有过渡动画，避免闪烁 */
+        * {
+            transition: none !important;
+        }
     </style>
 </head>
 <body>
-<div class="card">
-    <div class="title">动态水质调控板</div>
 
-    <div class="five-bars">
-        <div class="param-unit"><div class="current-val" id="tempVal">28.0</div><input type="range" id="tempSlider" class="vert-slider" min="20" max="33" step="0.5" value="28"><div class="param-label">温度(℃)</div></div>
-        <div class="param-unit"><div class="current-val" id="phVal">8.20</div><input type="range" id="phSlider" class="vert-slider" min="7.2" max="9.4" step="0.02" value="8.2"><div class="param-label">pH值</div></div>
-        <div class="param-unit"><div class="current-val" id="salVal">20</div><input type="range" id="salSlider" class="vert-slider" min="0" max="40" step="1" value="20"><div class="param-label">盐度(‰)</div></div>
-        <div class="param-unit"><div class="current-val" id="tanVal">0.50</div><input type="range" id="tanSlider" class="vert-slider" min="0" max="4.0" step="0.02" value="0.5"><div class="param-label">总氨氮</div></div>
-        <div class="param-unit"><div class="current-val" id="dayVal">30</div><input type="range" id="daySlider" class="vert-slider" min="1" max="100" step="1" value="30"><div class="param-label">养殖天数</div></div>
+    <!-- ============================================================
+    卡片一：密度盐度转换器
+    ============================================================ -->
+    <div class="card">
+        <div class="card-title">🧮 密度 · 盐度 转换</div>
+
+        <div class="conv-item">
+            <label>🌡️ 温度</label>
+            <input type="number" id="convTemp" step="0.1" placeholder="25" value="25">
+            <span class="unit">℃</span>
+        </div>
+        <div class="conv-item">
+            <label>🧂 盐度</label>
+            <input type="number" id="convSal" step="0.5" placeholder="20" value="20">
+            <span class="unit">PSU</span>
+        </div>
+        <div class="conv-item">
+            <label>⚖️ 密度</label>
+            <input type="number" id="convDens" step="0.001" placeholder="自动计算">
+            <span class="unit">kg/m³</span>
+        </div>
+
+        <div class="conv-result">
+            📌 计算结果：<span id="resultText">—</span>
+        </div>
+        <div class="conv-hint">💡 填温度+盐度 → 算密度 · 填温度+密度 → 算盐度</div>
     </div>
 
-    <!-- 加高加宽后的顶部黑条 -->
-    <div class="info-header">
-        <span>🧪 NH₃ <strong id="nh3Display">0.000</strong> mg/L</span>
-        <span>安全阈值: <strong id="nh3SafeLimit">0.100</strong> mg/L</span>
-        <span id="dayHint" style="font-size:0.85rem;">(天数30)</span>
+    <!-- ============================================================
+    卡片二：水质调控板（完整原样）
+    ============================================================ -->
+    <div class="card">
+        <div class="card-title">💧 水质调控板</div>
+
+        <div class="five-bars">
+            <div class="param-unit">
+                <div class="current-val" id="tempVal">28.0</div>
+                <input type="range" id="tempSlider" class="vert-slider" min="20" max="33" step="0.5" value="28">
+                <div class="param-label">温度(℃)</div>
+            </div>
+            <div class="param-unit">
+                <div class="current-val" id="phVal">8.20</div>
+                <input type="range" id="phSlider" class="vert-slider" min="7.2" max="9.4" step="0.02" value="8.2">
+                <div class="param-label">pH值</div>
+            </div>
+            <div class="param-unit">
+                <div class="current-val" id="salVal">20</div>
+                <input type="range" id="salSlider" class="vert-slider" min="0" max="40" step="1" value="20">
+                <div class="param-label">盐度(‰)</div>
+            </div>
+            <div class="param-unit">
+                <div class="current-val" id="tanVal">0.50</div>
+                <input type="range" id="tanSlider" class="vert-slider" min="0" max="4.0" step="0.02" value="0.5">
+                <div class="param-label">总氨氮</div>
+            </div>
+            <div class="param-unit">
+                <div class="current-val" id="dayVal">30</div>
+                <input type="range" id="daySlider" class="vert-slider" min="1" max="100" step="1" value="30">
+                <div class="param-label">养殖天数</div>
+            </div>
+        </div>
+
+        <div class="info-header">
+            <span>🧪 NH₃ <strong id="nh3Display">0.000</strong> mg/L</span>
+            <span>安全阈值: <strong id="nh3SafeLimit">0.100</strong> mg/L</span>
+            <span id="dayHint" style="font-size:0.85rem;">(天数30)</span>
+        </div>
+
+        <div class="advice-container">
+            <div class="advice-row" id="tempAdviceRow"><div class="advice-content temp-advice" id="tempAdviceText">— — —</div></div>
+            <div class="advice-row" id="phAdviceRow"><div class="advice-content ph-advice" id="phAdviceText">— — —</div></div>
+            <div class="advice-row" id="nh3AdviceRow"><div class="advice-content nh3-advice" id="nh3AdviceText">— — —</div></div>
+        </div>
     </div>
 
-    <div class="advice-container">
-        <div class="advice-row" id="tempAdviceRow"><div class="advice-content temp-advice" id="tempAdviceText">— — —</div></div>
-        <div class="advice-row" id="phAdviceRow"><div class="advice-content ph-advice" id="phAdviceText">— — —</div></div>
-        <div class="advice-row" id="nh3AdviceRow"><div class="advice-content nh3-advice" id="nh3AdviceText">— — —</div></div>
-    </div>
-</div>
+    <script>
+        // ================================================================
+        // 密度盐度转换器（完全独立）
+        // ================================================================
+        (function() {
+            const tempInput = document.getElementById('convTemp');
+            const salInput = document.getElementById('convSal');
+            const densInput = document.getElementById('convDens');
+            const resultText = document.getElementById('resultText');
 
-<script>
-    function getSalinityFactor(sal) {
-        if (sal < 5) return 0.45;
-        if (sal < 10) return 0.65;
-        if (sal < 20) return 0.85;
-        return 1.0;
-    }
+            // EOS-80 核心函数
+            function pureWaterDensity(T) {
+                return 999.842594
+                    + 6.793952e-2 * T
+                    - 9.095290e-3 * T * T
+                    + 1.001685e-4 * T * T * T
+                    - 1.120083e-6 * T * T * T * T
+                    + 6.536336e-9 * T * T * T * T * T;
+            }
 
-    function getBaseSafeNH3(day) {
-        if (day <= 15) return 0.05;
-        if (day <= 45) {
-            let t = (day - 15) / 30.0;
-            return +(0.05 + t * (0.20 - 0.05)).toFixed(3);
-        }
-        if (day <= 60) {
-            let t = (day - 45) / 15.0;
-            return +(0.20 + t * (0.35 - 0.20)).toFixed(3);
-        }
-        return 0.35;
-    }
+            function seawaterDensity(T, S) {
+                if (S < 0) S = 0;
+                if (S > 40) S = 40;
+                const rho_w = pureWaterDensity(T);
+                const A = 0.824493
+                    - 4.0899e-3 * T
+                    + 7.6438e-5 * T * T
+                    - 8.2467e-7 * T * T * T
+                    + 5.3875e-9 * T * T * T * T;
+                const B = -5.72466e-3
+                    + 1.0227e-4 * T
+                    - 1.6546e-6 * T * T;
+                const C = 4.8314e-4;
+                return rho_w + A * S + B * Math.pow(S, 1.5) + C * S * S;
+            }
 
-    function getFinalSafeNH3(salinity, day) {
-        let base = getBaseSafeNH3(day);
-        let factor = getSalinityFactor(salinity);
-        return base * factor;
-    }
+            function solveSalinity(T, targetDensity) {
+                let S_low = 0.0, S_high = 40.0, S_mid = 0;
+                const rho_low = seawaterDensity(T, S_low);
+                const rho_high = seawaterDensity(T, S_high);
+                if (targetDensity <= rho_low) return 0;
+                if (targetDensity >= rho_high) return 40;
+                for (let i = 0; i < 100; i++) {
+                    S_mid = (S_low + S_high) / 2;
+                    const rho_mid = seawaterDensity(T, S_mid);
+                    if (rho_mid < targetDensity) S_low = S_mid;
+                    else S_high = S_mid;
+                    if (S_high - S_low < 1e-8) break;
+                }
+                return (S_low + S_high) / 2;
+            }
 
-    function calcPKa(tempC) {
-        return 0.09018 + 2729.92 / (tempC + 273.15);
-    }
+            let updating = false;
 
-    function calcNH3(pH, tempC, tan, salinity) {
-        let pKa = calcPKa(tempC);
-        let ratio = Math.pow(10, pKa - pH) + 1;
-        return tan / ratio;
-    }
+            function updateLeft() {
+                if (updating) return;
+                const T = parseFloat(tempInput.value);
+                const S = parseFloat(salInput.value);
+                const D = parseFloat(densInput.value);
 
-    function getTempAdvice(tempC) {
-        if (tempC > 32) return `🌡️ 温度 ${tempC.toFixed(1)}℃：加大增氧、遮阳、加深水位`;
-        if (tempC < 22) return `❄️ 温度 ${tempC.toFixed(1)}℃：请加温至22℃以上`;
-        return "";
-    }
+                const hasT = !isNaN(T);
+                const hasS = !isNaN(S) && S >= 0;
+                const hasD = !isNaN(D) && D > 0;
 
-    function getPhAdvice(pH) {
-        if (pH >= 9.0) return `🧪 pH ${pH.toFixed(2)}：遮光+芽孢光合+乳酸菌100斤/亩`;
-        if (pH >= 8.8) return `🧪 pH ${pH.toFixed(2)}：遮光+芽孢光合+乳酸菌50斤/亩`;
-        if (pH >= 8.7) return `🧪 pH ${pH.toFixed(2)}：遮光控藻`;
-        if (pH <= 8.0) return `🧪 pH ${pH.toFixed(2)}：泼洒生石灰5-10kg/亩`;
-        return "";
-    }
+                if (!hasT) {
+                    resultText.textContent = '⚠️ 请输入温度';
+                    return;
+                }
 
-    function getNh3Advice(nh3, safeNh3, tan, pH) {
-        if (nh3 > safeNh3) {
-            let advice = "⚠️ NH₃超：光合菌+红糖，减料增氧";
-            if (pH <= 8.0 && tan > 1.0) advice += "，小球藻种+磷酸二氢钾培藻";
-            return advice;
-        }
-        return "";
-    }
+                if (hasT && hasS) {
+                    let rho = seawaterDensity(T, S);
+                    updating = true;
+                    densInput.value = rho.toFixed(3);
+                    updating = false;
+                    resultText.textContent = rho.toFixed(3) + ' kg/m³';
+                    return;
+                }
 
-    const tempSlider = document.getElementById('tempSlider');
-    const phSlider = document.getElementById('phSlider');
-    const salSlider = document.getElementById('salSlider');
-    const tanSlider = document.getElementById('tanSlider');
-    const daySlider = document.getElementById('daySlider');
-    const tempVal = document.getElementById('tempVal');
-    const phVal = document.getElementById('phVal');
-    const salVal = document.getElementById('salVal');
-    const tanVal = document.getElementById('tanVal');
-    const dayVal = document.getElementById('dayVal');
-    const nh3Display = document.getElementById('nh3Display');
-    const nh3SafeLimitSpan = document.getElementById('nh3SafeLimit');
-    const dayHint = document.getElementById('dayHint');
-    const tempAdviceText = document.getElementById('tempAdviceText');
-    const phAdviceText = document.getElementById('phAdviceText');
-    const nh3AdviceText = document.getElementById('nh3AdviceText');
+                if (hasT && hasD) {
+                    let sal = solveSalinity(T, D);
+                    if (sal < 0) sal = 0;
+                    if (sal > 40) sal = 40;
+                    updating = true;
+                    salInput.value = sal.toFixed(2);
+                    updating = false;
+                    resultText.textContent = sal.toFixed(2) + ' PSU';
+                    return;
+                }
 
-    function refresh() {
-        let temp = parseFloat(tempSlider.value);
-        let pH = parseFloat(phSlider.value);
-        let sal = parseFloat(salSlider.value);
-        let tan = parseFloat(tanSlider.value);
-        let day = parseInt(daySlider.value);
+                resultText.textContent = '请输入盐度 或 密度';
+            }
 
-        tempVal.innerText = temp.toFixed(1);
-        phVal.innerText = pH.toFixed(2);
-        salVal.innerText = sal;
-        tanVal.innerText = tan.toFixed(2);
-        dayVal.innerText = day;
+            tempInput.addEventListener('input', updateLeft);
+            salInput.addEventListener('input', updateLeft);
+            densInput.addEventListener('input', updateLeft);
 
-        let safeNH3 = getFinalSafeNH3(sal, day);
-        let currentNH3 = calcNH3(pH, temp, tan, sal);
-        nh3Display.innerText = currentNH3.toFixed(4);
-        nh3SafeLimitSpan.innerText = safeNH3.toFixed(3);
-        dayHint.innerText = `(天数${day})`;
+            // 初始计算
+            updateLeft();
+        })();
 
-        let tempAdv = getTempAdvice(temp);
-        let phAdv = getPhAdvice(pH);
-        let nh3Adv = getNh3Advice(currentNH3, safeNH3, tan, pH);
+        // ================================================================
+        // 水质调控板（完全独立，原样逻辑）
+        // ================================================================
+        (function() {
+            function getSalinityFactor(sal) {
+                if (sal < 5) return 0.45;
+                if (sal < 10) return 0.65;
+                if (sal < 20) return 0.85;
+                return 1.0;
+            }
 
-        tempAdviceText.innerText = tempAdv || "— — —";
-        phAdviceText.innerText = phAdv || "— — —";
-        nh3AdviceText.innerText = nh3Adv || "— — —";
+            function getBaseSafeNH3(day) {
+                if (day <= 15) return 0.05;
+                if (day <= 45) {
+                    let t = (day - 15) / 30.0;
+                    return +(0.05 + t * (0.20 - 0.05)).toFixed(3);
+                }
+                if (day <= 60) {
+                    let t = (day - 45) / 15.0;
+                    return +(0.20 + t * (0.35 - 0.20)).toFixed(3);
+                }
+                return 0.35;
+            }
 
-        tempAdviceText.className = tempAdv ? "advice-content temp-advice" : "advice-content placeholder";
-        phAdviceText.className = phAdv ? "advice-content ph-advice" : "advice-content placeholder";
-        nh3AdviceText.className = nh3Adv ? "advice-content nh3-advice" : "advice-content placeholder";
-    }
+            function getFinalSafeNH3(salinity, day) {
+                let base = getBaseSafeNH3(day);
+                let factor = getSalinityFactor(salinity);
+                return base * factor;
+            }
 
-    [tempSlider, phSlider, salSlider, tanSlider, daySlider].forEach(s => s.addEventListener('input', refresh));
-    refresh();
-</script>
+            function calcPKa(tempC) {
+                return 0.09018 + 2729.92 / (tempC + 273.15);
+            }
+
+            function calcNH3(pH, tempC, tan, salinity) {
+                let pKa = calcPKa(tempC);
+                let ratio = Math.pow(10, pKa - pH) + 1;
+                return tan / ratio;
+            }
+
+            function getTempAdvice(tempC) {
+                if (tempC > 32) return `🌡️ 温度 ${tempC.toFixed(1)}℃：加大增氧、遮阳、加深水位`;
+                if (tempC < 22) return `❄️ 温度 ${tempC.toFixed(1)}℃：请加温至22℃以上`;
+                return "";
+            }
+
+            function getPhAdvice(pH) {
+                if (pH >= 9.0) return `🧪 pH ${pH.toFixed(2)}：遮光+芽孢光合+乳酸菌100斤/亩`;
+                if (pH >= 8.8) return `🧪 pH ${pH.toFixed(2)}：遮光+芽孢光合+乳酸菌50斤/亩`;
+                if (pH >= 8.7) return `🧪 pH ${pH.toFixed(2)}：遮光控藻`;
+                if (pH <= 8.0) return `🧪 pH ${pH.toFixed(2)}：泼洒生石灰5-10kg/亩`;
+                return "";
+            }
+
+            function getNh3Advice(nh3, safeNh3, tan, pH) {
+                if (nh3 > safeNh3) {
+                    let advice = "⚠️ NH₃超：光合菌+红糖，减料增氧";
+                    if (pH <= 8.0 && tan > 1.0) advice += "，小球藻种+磷酸二氢钾培藻";
+                    return advice;
+                }
+                return "";
+            }
+
+            const tempSlider = document.getElementById('tempSlider');
+            const phSlider = document.getElementById('phSlider');
+            const salSlider = document.getElementById('salSlider');
+            const tanSlider = document.getElementById('tanSlider');
+            const daySlider = document.getElementById('daySlider');
+
+            const tempVal = document.getElementById('tempVal');
+            const phVal = document.getElementById('phVal');
+            const salVal = document.getElementById('salVal');
+            const tanVal = document.getElementById('tanVal');
+            const dayVal = document.getElementById('dayVal');
+
+            const nh3Display = document.getElementById('nh3Display');
+            const nh3SafeLimitSpan = document.getElementById('nh3SafeLimit');
+            const dayHint = document.getElementById('dayHint');
+
+            const tempAdviceText = document.getElementById('tempAdviceText');
+            const phAdviceText = document.getElementById('phAdviceText');
+            const nh3AdviceText = document.getElementById('nh3AdviceText');
+
+            function refreshRight() {
+                let temp = parseFloat(tempSlider.value);
+                let pH = parseFloat(phSlider.value);
+                let sal = parseFloat(salSlider.value);
+                let tan = parseFloat(tanSlider.value);
+                let day = parseInt(daySlider.value);
+
+                tempVal.innerText = temp.toFixed(1);
+                phVal.innerText = pH.toFixed(2);
+                salVal.innerText = sal;
+                tanVal.innerText = tan.toFixed(2);
+                dayVal.innerText = day;
+
+                let safeNH3 = getFinalSafeNH3(sal, day);
+                let currentNH3 = calcNH3(pH, temp, tan, sal);
+                nh3Display.innerText = currentNH3.toFixed(4);
+                nh3SafeLimitSpan.innerText = safeNH3.toFixed(3);
+                dayHint.innerText = `(天数${day})`;
+
+                let tempAdv = getTempAdvice(temp);
+                let phAdv = getPhAdvice(pH);
+                let nh3Adv = getNh3Advice(currentNH3, safeNH3, tan, pH);
+
+                tempAdviceText.innerText = tempAdv || "— — —";
+                phAdviceText.innerText = phAdv || "— — —";
+                nh3AdviceText.innerText = nh3Adv || "— — —";
+
+                tempAdviceText.className = tempAdv ? "advice-content temp-advice" : "advice-content placeholder";
+                phAdviceText.className = phAdv ? "advice-content ph-advice" : "advice-content placeholder";
+                nh3AdviceText.className = nh3Adv ? "advice-content nh3-advice" : "advice-content placeholder";
+            }
+
+            [tempSlider, phSlider, salSlider, tanSlider, daySlider].forEach(s => s.addEventListener('input', refreshRight));
+            refreshRight();
+        })();
+    </script>
 </body>
 </html>
