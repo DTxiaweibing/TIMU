@@ -1,0 +1,44 @@
+name: Build Knowledge Base
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'kb_source/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install onnxruntime numpy
+
+      - name: Preprocess aliases
+        run: python kb_source/preprocess_aliases.py --no-backup
+
+      - name: Build knowledge base
+        run: python kb_source/build_knowledge_db.py
+
+      - name: Copy outputs to repo root
+        run: |
+          cp kb_source/knowledge_base.db .
+          cp kb_source/knowledge_base_version.json .
+
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add knowledge_base.db
+          git add knowledge_base_version.json
+          git add kb_source/kb_version.txt
+          git add kb_source/*.md
+          git diff --staged --quiet || git commit -m "auto: 知识库自动构建 [skip ci]"
+          git push
