@@ -61,9 +61,8 @@ def add_aliases_to_text(text: str, max_per_term: int = 3) -> str:
 
 def main():
     files = [
+        "实操规则篇.md",
         "水质理论篇.md",
-        "小棚实操手册.md",
-        "操作规则302条.md",
     ]
 
     total_ops = 0
