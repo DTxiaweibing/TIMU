@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Knowledge base chunking & vectorization script (ONNX local version)
+# Uses local model_qint8.onnx + vocab.txt, no PyTorch needed
 
 import hashlib, json
 import re
@@ -21,6 +22,8 @@ OVERLAP_CHARS = 60
 
 
 class BertTokenizer:
+    """Simple BERT WordPiece tokenizer based on vocab.txt"""
+
     def __init__(self, vocab_path):
         with open(vocab_path, 'r', encoding='utf-8') as f:
             self.vocab = {t.strip(): i for i, t in enumerate(f)}
@@ -62,49 +65,23 @@ class BertTokenizer:
         )
 
 
-def split_rules(text):
-    """Split 实操规则篇.md: each 【】entry is one chunk"""
-    items = [r.strip() for r in re.split(r'(?=^【)', text, flags=re.MULTILINE) if r.strip()]
-    return items
-
-
-def split_theory(text):
-    """Split 水质理论篇.md: each ## section is a chunk, with overflow splitting"""
-    parts = re.split(r'(?=^## )', text, flags=re.MULTILINE)
-    result = []
-    for p in parts:
-        p = p.strip()
-        if not p:
-            continue
-        if len(p) <= MAX_CHARS:
-            result.append(p)
-        else:
-            result.extend(split_long_text(p))
-    return result
-
-
-def split_long_text(text):
-    """Split long text into overlapping chunks"""
-    chunks = []
-    start = 0
-    while start < len(text):
-        end = start + MAX_CHARS
-        if end >= len(text):
-            chunks.append(text[start:].strip())
-            break
-        # try to cut at paragraph boundary
-        cutoff = text.rfind('\n\n', start, end + 1)
-        if cutoff == -1 or cutoff <= start:
-            cutoff = text.rfind('\n', start, end + 1)
-        if cutoff == -1 or cutoff <= start:
-            cutoff = text.rfind('。', start, end + 1)
-        if cutoff == -1 or cutoff <= start:
-            cutoff = end
-        else:
-            cutoff += 1
-        chunks.append(text[start:cutoff].strip())
-        start = max(cutoff - OVERLAP_CHARS, start + 1)
-    return chunks
+def split_subsections(text, doc_type):
+    """
+    Split document by subsection boundaries.
+    - 'theory': split on `## ` (markdown H2 = each section)
+    - 'manual': split on numbered headings like `X.X.X` or `X.X.X.X`
+    - 'rules': split on `**N.**` (already correct)
+    """
+    if doc_type == "rules":
+        items = [r.strip() for r in re.split(r'(?=^\*\*\d+\.\*\*)', text, flags=re.MULTILINE) if r.strip()]
+        return items
+    elif doc_type == "theory":
+        parts = re.split(r'(?=^## )', text, flags=re.MULTILINE)
+        return [p.strip() for p in parts if p.strip()]
+    elif doc_type == "manual":
+        parts = re.split(r'(?=^\d+\.\d+\.\d+(?:\.\d+)*)', text, flags=re.MULTILINE)
+        return [p.strip() for p in parts if p.strip()]
+    return []
 
 
 def get_embedding(session, tokenizer, text):
@@ -140,8 +117,9 @@ def main():
     print("Chunking documents...")
 
     name_map = [
-        ("实操规则篇.md", "rules"),
         ("水质理论篇.md", "theory"),
+        ("小棚实操手册.md", "manual"),
+        ("操作规则302条.md", "rules"),
     ]
     for fname, doc_id in name_map:
         path = BASE_DIR / fname
@@ -151,18 +129,15 @@ def main():
 
         text = path.read_text(encoding='utf-8-sig')
 
-        if doc_id == "rules":
-            chunks = split_rules(text)
-        else:
-            chunks = split_theory(text)
-
+        chunks = split_subsections(text, doc_id)
         start = len(all_chunks)
         for i, ch in enumerate(chunks):
             all_chunks.append((doc_id, i, ch))
         print(f"  {path.name}: {len(all_chunks) - start} chunks")
 
     if not all_chunks:
-        print("No chunks generated.")
+        print("No chunks generated. Check if input files exist.")
+        print("Expected files: 水质理论篇.md, 小棚实操手册.md, 操作规则302条.md")
         return
 
     print(f"\nTotal: {len(all_chunks)} chunks, generating embeddings...")
@@ -208,10 +183,12 @@ def main():
             (doc_id, idx, content, emb_bytes)
         )
 
+    # Compute md5
     conn.commit()
     conn.close()
     md5_hash = hashlib.md5(out_path.read_bytes()).hexdigest()
 
+    # Store version info in DB
     conn = sqlite3.connect(str(out_path))
     conn.execute("INSERT OR REPLACE INTO metadata VALUES (?, ?)", ("version", str(current_version)))
     conn.execute("INSERT OR REPLACE INTO metadata VALUES (?, ?)", ("chunks", str(len(all_chunks))))
@@ -219,6 +196,7 @@ def main():
     conn.commit()
     conn.close()
 
+    # Output version.json for TIMU
     version_info = {
         "version": current_version,
         "chunks": len(all_chunks),
