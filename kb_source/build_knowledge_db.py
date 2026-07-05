@@ -65,22 +65,59 @@ class BertTokenizer:
         )
 
 
+def split_sentences(text, max_splits=3):
+    """Split into sentences by Chinese punctuation, max `max_splits` sentences"""
+    sents = [s.strip() for s in re.split(r'[。？！；！?]', text) if s.strip()]
+    return [s for s in sents if len(s) >= 10][:max_splits]
+
+
 def split_subsections(text, doc_type):
-    """
-    Split document by subsection boundaries.
-    - 'theory': split on `## ` (markdown H2 = each section)
-    - 'manual': split on numbered headings like `X.X.X` or `X.X.X.X`
-    - 'rules': split on `**N.**` (already correct)
-    """
     if doc_type == "rules":
-        items = [r.strip() for r in re.split(r'(?=^\*\*\d+\.\*\*)', text, flags=re.MULTILINE) if r.strip()]
-        return items
+        sections = [r.strip() for r in re.split(r'(?=^\*\*\d+\.\*\*)', text, flags=re.MULTILINE) if r.strip()]
+        chunks = []
+        for sec in sections:
+            body = re.sub(r'^\*\*\d+\.\*\*', '', sec).strip()
+            sents = split_sentences(body, 3)
+            if not sents:
+                chunks.append(sec)
+            else:
+                m = re.search(r'\*\*(\d+)\.\*\*', sec)
+                num = m.group(1) if m else "0"
+                for s in sents:
+                    chunks.append(f"**{num}.** {s}")
+        return chunks
     elif doc_type == "theory":
         parts = re.split(r'(?=^## )', text, flags=re.MULTILINE)
-        return [p.strip() for p in parts if p.strip()]
+        chunks = []
+        for p in parts:
+            p = p.strip()
+            if not p: continue
+            title = re.match(r'(## [^\n]+)', p)
+            sec_title = title.group(1) if title else ""
+            body = re.sub(r'^## [^\n]+\n*', '', p).strip()
+            sents = split_sentences(body, 5)
+            if not sents:
+                chunks.append(p)
+            else:
+                for s in sents:
+                    chunks.append(f"{sec_title}\n{s}")
+        return chunks
     elif doc_type == "manual":
         parts = re.split(r'(?=^\d+\.\d+\.\d+(?:\.\d+)*)', text, flags=re.MULTILINE)
-        return [p.strip() for p in parts if p.strip()]
+        chunks = []
+        for p in parts:
+            p = p.strip()
+            if not p: continue
+            sec = re.match(r'^(\d+\.\d+\.\d+(?:\.\d+)*)', p)
+            sec_num = sec.group(1) if sec else ""
+            body = re.sub(r'^\d+\.\d+\.\d+(?:\.\d+)*\s*', '', p).strip()
+            sents = split_sentences(body, 3)
+            if not sents:
+                chunks.append(p)
+            else:
+                for s in sents:
+                    chunks.append(f"{sec_num} {s}")
+        return chunks
     return []
 
 
