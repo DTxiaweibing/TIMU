@@ -156,7 +156,7 @@ def main():
     name_map = [
         ("水质理论篇.md", "theory"),
         ("小棚实操手册.md", "manual"),
-        ("操作规则302条.md", "rules"),
+        ("操作规则2026.md", "rules"),
     ]
     for fname, doc_id in name_map:
         path = BASE_DIR / fname
@@ -174,7 +174,7 @@ def main():
 
     if not all_chunks:
         print("No chunks generated. Check if input files exist.")
-        print("Expected files: 水质理论篇.md, 小棚实操手册.md, 操作规则302条.md")
+        print("Expected files: 水质理论篇.md, 小棚实操手册.md, 操作规则2026.md")
         return
 
     print(f"\nTotal: {len(all_chunks)} chunks, generating embeddings...")
