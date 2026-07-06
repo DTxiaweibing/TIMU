@@ -468,6 +468,42 @@ body {
   padding: 0.3rem 0.8rem;
   border-radius: 12px;
 }
+/* 提取码醒目样式 */
+.extract-code-box {
+  background: #fff3cd;
+  border: 3px solid #ffc107;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(255,193,7,0.3);
+}
+.extract-code-box .label {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #856404;
+  display: block;
+}
+.extract-code-box .code {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 12px;
+  color: #b8860b;
+  background: white;
+  display: inline-block;
+  padding: 0 20px;
+  border-radius: 12px;
+  margin: 6px 0 4px;
+  line-height: 1.4;
+  border: 1px dashed #ffc107;
+}
+.extract-code-box .hint {
+  font-size: 0.95rem;
+  color: #856404;
+  font-weight: 500;
+  display: block;
+  margin-top: 4px;
+}
 
 /* ========== Footer ========== */
 .site-footer {
@@ -502,6 +538,7 @@ body {
   .section-title h2 { font-size: 1.6rem; }
   .main-nav { display: none; }
   .header-inner { justify-content: center; }
+  .extract-code-box .code { font-size: 2.2rem; letter-spacing: 8px; }
 }
 
 @media (max-width: 480px) {
@@ -509,6 +546,7 @@ body {
   .hero h1 { font-size: 1.5rem; }
   .highlight-grid { grid-template-columns: repeat(2, 1fr); }
   .download-card { padding: 1.5rem 1rem; }
+  .extract-code-box .code { font-size: 1.8rem; letter-spacing: 4px; }
 }
 </style>
 </head>
@@ -774,6 +812,12 @@ body {
     </div>
     <div class="download-card">
       <div class="version">最新版本</div>
+      <!-- ⭐ 醒目提取码显示区域 ⭐ -->
+      <div class="extract-code-box">
+        <span class="label">🔑 下载提取码</span>
+        <span class="code">6127</span>
+        <span class="hint">点击下方按钮后，请输入此提取码</span>
+      </div>
       <div class="apk-name" id="download-apk-name">🦐 正在加载...</div>
       <a href="#" class="cta-btn" id="download-btn" download>⬇ 下载 APK 安装包</a>
       <div class="download-info" id="download-info">
