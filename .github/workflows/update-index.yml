@@ -1,53 +1,46 @@
-name: 更新 index.html
+name: 更新 index.html 从 update.json
 
 on:
   push:
     branches:
       - main
-    paths:
-      - 'update.json'
-  workflow_dispatch:  # 允许手动触发
+    # 去掉 paths 过滤，确保每次推送都运行（这样即使路径有问题也能触发）
+  workflow_dispatch:  # 支持手动触发
 
 jobs:
-  update:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0   # 确保获取完整历史
-
-      - name: 查看触发文件
-        run: |
-          echo "本次触发的 commit: ${{ github.sha }}"
-          ls -la
-          cat update.json || echo "update.json 不存在"
 
       - name: 安装 jq
         run: sudo apt-get install -y jq
 
-      - name: 提取字段并设置输出
+      - name: 读取 update.json
         id: read
         run: |
-          # 检查 update.json 是否存在
+          # 检查文件是否存在
           if [ ! -f update.json ]; then
-            echo "错误：update.json 文件不存在"
+            echo "错误: update.json 不存在"
             exit 1
           fi
-          VERSION=$(jq -r '.file_info.version' update.json)
-          APK_NAME=$(jq -r '.file_info.name' update.json)
-          SIZE=$(jq -r '.file_info.size' update.json)
-          MD5=$(jq -r '.file_info.md5' update.json)
-          UPDATE_LOG=$(jq -r '.update_log' update.json)
-          DATE=$(jq -r '.metadata["生成时间"]' update.json)
-          DOWNLOAD_URL=$(jq -r '.file_info.download_url' update.json)
-          EXTRACT_CODE=$(jq -r '.file_info.extract_code' update.json)
 
-          # 输出变量
+          # 提取字段（如果某个字段缺失，jq 会返回 null，我们后续处理）
+          VERSION=$(jq -r '.file_info.version // ""' update.json)
+          APK_NAME=$(jq -r '.file_info.name // ""' update.json)
+          SIZE=$(jq -r '.file_info.size // ""' update.json)
+          MD5=$(jq -r '.file_info.md5 // ""' update.json)
+          UPDATE_LOG=$(jq -r '.update_log // ""' update.json)
+          DATE=$(jq -r '.metadata["生成时间"] // ""' update.json)
+          DOWNLOAD_URL=$(jq -r '.file_info.download_url // ""' update.json)
+          EXTRACT_CODE=$(jq -r '.file_info.extract_code // ""' update.json)
+
+          # 输出变量供后续步骤使用
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "apk_name=$APK_NAME" >> $GITHUB_OUTPUT
           echo "size=$SIZE" >> $GITHUB_OUTPUT
@@ -57,46 +50,39 @@ jobs:
           echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
           echo "extract_code=$EXTRACT_CODE" >> $GITHUB_OUTPUT
 
-          # 打印调试信息
-          echo "提取结果："
-          echo "VERSION=$VERSION"
-          echo "APK_NAME=$APK_NAME"
-          echo "EXTRACT_CODE=$EXTRACT_CODE"
+          # 调试输出（可以在日志中看到）
+          echo "提取到: VERSION=$VERSION, EXTRACT_CODE=$EXTRACT_CODE"
 
-      - name: 替换 index.html 中的占位符
+      - name: 替换占位符
         run: |
           # 检查 index.html 是否存在
           if [ ! -f index.html ]; then
-            echo "错误：index.html 文件不存在"
+            echo "错误: index.html 不存在"
             exit 1
           fi
 
-          # 处理 update_log 中的换行符
-          LOG="${{ steps.read.outputs.update_log }}"
-          # 使用 printf 转义（防止 sed 出错）
-          LOG_ESCAPED=$(printf '%s\n' "$LOG" | sed 's/\\/\\\\/g; s/"/\\"/g')
-          # 但 sed 直接替换多行字符串比较麻烦，我们使用 jq 的 --arg 方式替代，但这里简单处理为替换 \n 为 <br>
-          # 或者保留原格式，我们将整个内容替换为 LOG 变量，用 | 分隔避免转义问题
-          # 我们使用 python 来处理更安全，但这里用简单方法：
-          # 将 update_log 中的换行符替换为 \n 字面量，然后再用 sed 插入
-          LOG_LINE=$(echo "$LOG" | sed ':a;N;$!ba;s/\n/\\n/g')
+          # 使用 sed 替换，注意转义特殊字符（特别是 URL 中的 /）
           sed -i "s|{{VERSION}}|${{ steps.read.outputs.version }}|g" index.html
           sed -i "s|{{APK_NAME}}|${{ steps.read.outputs.apk_name }}|g" index.html
           sed -i "s|{{SIZE}}|${{ steps.read.outputs.size }}|g" index.html
           sed -i "s|{{MD5}}|${{ steps.read.outputs.md5 }}|g" index.html
-          sed -i "s|{{UPDATE_LOG}}|$LOG_LINE|g" index.html
           sed -i "s|{{DATE}}|${{ steps.read.outputs.date }}|g" index.html
           sed -i "s|{{DOWNLOAD_URL}}|${{ steps.read.outputs.download_url }}|g" index.html
           sed -i "s|{{EXTRACT_CODE}}|${{ steps.read.outputs.extract_code }}|g" index.html
 
-      - name: 检查更改并提交
+          # 处理多行 update_log：将换行符替换为 \n 字面量，然后 sed 插入
+          LOG="${{ steps.read.outputs.update_log }}"
+          LOG_ESCAPED=$(printf "%s" "$LOG" | sed 's/\\/\\\\/g; s/\n/\\n/g')
+          sed -i "s|{{UPDATE_LOG}}|$LOG_ESCAPED|g" index.html
+
+      - name: 提交更改
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --staged --quiet; then
-            echo "没有变化，跳过提交"
+            echo "无变化，跳过提交"
           else
-            git commit -m "chore: 自动更新 index.html 从 update.json (提取码: ${{ steps.read.outputs.extract_code }})"
+            git commit -m "chore: 同步更新 index.html (提取码: ${{ steps.read.outputs.extract_code }})"
             git push
           fi
