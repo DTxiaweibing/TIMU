@@ -1,10 +1,9 @@
-name: 更新 index.html 从 update.json
+name: 硬编码更新 index.html
 
 on:
   push:
     branches:
       - main
-    # 去掉 paths 过滤，确保每次推送都运行（这样即使路径有问题也能触发）
   workflow_dispatch:  # 支持手动触发
 
 jobs:
@@ -14,23 +13,33 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # 获取完整历史以便 diff
 
-      - name: 安装 jq
-        run: sudo apt-get install -y jq
-
-      - name: 读取 update.json
-        id: read
+      - name: 检查 update.json 是否变更
+        id: check
         run: |
-          # 检查文件是否存在
-          if [ ! -f update.json ]; then
-            echo "错误: update.json 不存在"
-            exit 1
+          # 获取本次提交的父提交，比较 update.json 的变化
+          if git diff --name-only HEAD^ HEAD | grep -q update.json; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "update.json 已变更，将重新生成 index.html"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "update.json 未变更，跳过后续步骤"
           fi
 
-          # 提取字段（如果某个字段缺失，jq 会返回 null，我们后续处理）
+      - name: 安装 jq
+        if: steps.check.outputs.changed == 'true'
+        run: sudo apt-get install -y jq
+
+      - name: 读取 update.json 所有字段
+        id: read
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          # 如果某些字段缺失，jq 返回空字符串
           VERSION=$(jq -r '.file_info.version // ""' update.json)
           APK_NAME=$(jq -r '.file_info.name // ""' update.json)
           SIZE=$(jq -r '.file_info.size // ""' update.json)
@@ -40,7 +49,6 @@ jobs:
           DOWNLOAD_URL=$(jq -r '.file_info.download_url // ""' update.json)
           EXTRACT_CODE=$(jq -r '.file_info.extract_code // ""' update.json)
 
-          # 输出变量供后续步骤使用
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "apk_name=$APK_NAME" >> $GITHUB_OUTPUT
           echo "size=$SIZE" >> $GITHUB_OUTPUT
@@ -50,39 +58,35 @@ jobs:
           echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
           echo "extract_code=$EXTRACT_CODE" >> $GITHUB_OUTPUT
 
-          # 调试输出（可以在日志中看到）
+          # 调试输出
           echo "提取到: VERSION=$VERSION, EXTRACT_CODE=$EXTRACT_CODE"
 
-      - name: 替换占位符
+      - name: 替换占位符（硬编码）
+        if: steps.check.outputs.changed == 'true'
         run: |
-          # 检查 index.html 是否存在
-          if [ ! -f index.html ]; then
-            echo "错误: index.html 不存在"
-            exit 1
-          fi
+          # 转义 update_log 中的换行符为 \n 字面量
+          LOG="${{ steps.read.outputs.update_log }}"
+          LOG_ESCAPED=$(printf "%s" "$LOG" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\n/\\n/g')
 
-          # 使用 sed 替换，注意转义特殊字符（特别是 URL 中的 /）
+          # 执行替换
           sed -i "s|{{VERSION}}|${{ steps.read.outputs.version }}|g" index.html
           sed -i "s|{{APK_NAME}}|${{ steps.read.outputs.apk_name }}|g" index.html
           sed -i "s|{{SIZE}}|${{ steps.read.outputs.size }}|g" index.html
           sed -i "s|{{MD5}}|${{ steps.read.outputs.md5 }}|g" index.html
+          sed -i "s|{{UPDATE_LOG}}|$LOG_ESCAPED|g" index.html
           sed -i "s|{{DATE}}|${{ steps.read.outputs.date }}|g" index.html
           sed -i "s|{{DOWNLOAD_URL}}|${{ steps.read.outputs.download_url }}|g" index.html
           sed -i "s|{{EXTRACT_CODE}}|${{ steps.read.outputs.extract_code }}|g" index.html
 
-          # 处理多行 update_log：将换行符替换为 \n 字面量，然后 sed 插入
-          LOG="${{ steps.read.outputs.update_log }}"
-          LOG_ESCAPED=$(printf "%s" "$LOG" | sed 's/\\/\\\\/g; s/\n/\\n/g')
-          sed -i "s|{{UPDATE_LOG}}|$LOG_ESCAPED|g" index.html
-
-      - name: 提交更改
+      - name: 提交并推送更新后的 index.html
+        if: steps.check.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --staged --quiet; then
-            echo "无变化，跳过提交"
+            echo "index.html 无实际变化，跳过提交"
           else
-            git commit -m "chore: 同步更新 index.html (提取码: ${{ steps.read.outputs.extract_code }})"
+            git commit -m "chore: 从 update.json 硬编码更新 index.html (提取码: ${{ steps.read.outputs.extract_code }})"
             git push
           fi
