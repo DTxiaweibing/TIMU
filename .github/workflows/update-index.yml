@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # 支持手动触发
+  workflow_dispatch:
 
 jobs:
-  build:
+  update:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -17,29 +17,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0  # 获取完整历史以便 diff
+          fetch-depth: 0
 
       - name: 检查 update.json 是否变更
         id: check
         run: |
-          # 获取本次提交的父提交，比较 update.json 的变化
           if git diff --name-only HEAD^ HEAD | grep -q update.json; then
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "update.json 已变更，将重新生成 index.html"
           else
             echo "changed=false" >> $GITHUB_OUTPUT
-            echo "update.json 未变更，跳过后续步骤"
           fi
 
       - name: 安装 jq
         if: steps.check.outputs.changed == 'true'
         run: sudo apt-get install -y jq
 
-      - name: 读取 update.json 所有字段
+      - name: 提取字段
         id: read
         if: steps.check.outputs.changed == 'true'
         run: |
-          # 如果某些字段缺失，jq 返回空字符串
           VERSION=$(jq -r '.file_info.version // ""' update.json)
           APK_NAME=$(jq -r '.file_info.name // ""' update.json)
           SIZE=$(jq -r '.file_info.size // ""' update.json)
@@ -58,17 +54,13 @@ jobs:
           echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
           echo "extract_code=$EXTRACT_CODE" >> $GITHUB_OUTPUT
 
-          # 调试输出
-          echo "提取到: VERSION=$VERSION, EXTRACT_CODE=$EXTRACT_CODE"
-
       - name: 替换占位符（硬编码）
         if: steps.check.outputs.changed == 'true'
         run: |
-          # 转义 update_log 中的换行符为 \n 字面量
+          # 转义 update_log 中的换行符
           LOG="${{ steps.read.outputs.update_log }}"
           LOG_ESCAPED=$(printf "%s" "$LOG" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\n/\\n/g')
 
-          # 执行替换
           sed -i "s|{{VERSION}}|${{ steps.read.outputs.version }}|g" index.html
           sed -i "s|{{APK_NAME}}|${{ steps.read.outputs.apk_name }}|g" index.html
           sed -i "s|{{SIZE}}|${{ steps.read.outputs.size }}|g" index.html
@@ -78,14 +70,14 @@ jobs:
           sed -i "s|{{DOWNLOAD_URL}}|${{ steps.read.outputs.download_url }}|g" index.html
           sed -i "s|{{EXTRACT_CODE}}|${{ steps.read.outputs.extract_code }}|g" index.html
 
-      - name: 提交并推送更新后的 index.html
+      - name: 提交并推送
         if: steps.check.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --staged --quiet; then
-            echo "index.html 无实际变化，跳过提交"
+            echo "无变化，跳过提交"
           else
             git commit -m "chore: 从 update.json 硬编码更新 index.html (提取码: ${{ steps.read.outputs.extract_code }})"
             git push
