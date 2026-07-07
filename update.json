@@ -6,12 +6,11 @@
         "size": 120250040,
         "md5": "B9C6C1588A4927EE94C5D9D708D72E3D",
         "sha256": "6BAB98493DCB79793915AC1AC89B47B9C9D5086AD73C12BA82A680D401E586C1",
-        "download_url": "https://cloud.hiksemi.cn/#share-PNDW26",
-        "extract_code": "6129"
+        "download_url": "https://cloud.hiksemi.cn/web/share/index.html?language=cn&shareId=TEGMY2#/mobile"
     },
-    "update_log": "增加智能机器人功能\n修复若干已知问题",
+    "update_log": "无更新说明",
     "metadata": {
-        "生成时间": "2026-07-08T00:00:00+08:00",
+        "生成时间": "2026-07-08T06:06:10+08:00",
         "JSON文件生成器版本": "1.02"
     }
 }
