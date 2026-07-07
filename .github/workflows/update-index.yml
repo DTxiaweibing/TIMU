@@ -1,0 +1,70 @@
+name: Update index.html from update.json
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'update.json'
+
+jobs:
+  update-html:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 安装 jq
+        run: sudo apt-get install -y jq
+
+      - name: 提取所有字段
+        id: read
+        run: |
+          VERSION=$(jq -r '.file_info.version' update.json)
+          APK_NAME=$(jq -r '.file_info.name' update.json)
+          SIZE=$(jq -r '.file_info.size' update.json)
+          MD5=$(jq -r '.file_info.md5' update.json)
+          UPDATE_LOG=$(jq -r '.update_log' update.json)
+          DATE=$(jq -r '.metadata["生成时间"]' update.json)
+          DOWNLOAD_URL=$(jq -r '.file_info.download_url' update.json)
+          EXTRACT_CODE=$(jq -r '.file_info.extract_code' update.json)
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "apk_name=$APK_NAME" >> $GITHUB_OUTPUT
+          echo "size=$SIZE" >> $GITHUB_OUTPUT
+          echo "md5=$MD5" >> $GITHUB_OUTPUT
+          echo "update_log=$UPDATE_LOG" >> $GITHUB_OUTPUT
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+          echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
+          echo "extract_code=$EXTRACT_CODE" >> $GITHUB_OUTPUT
+
+      - name: 替换占位符
+        run: |
+          sed -i "s|{{VERSION}}|${{ steps.read.outputs.version }}|g" index.html
+          sed -i "s|{{APK_NAME}}|${{ steps.read.outputs.apk_name }}|g" index.html
+          sed -i "s|{{SIZE}}|${{ steps.read.outputs.size }}|g" index.html
+          sed -i "s|{{MD5}}|${{ steps.read.outputs.md5 }}|g" index.html
+          # 处理多行日志（保留换行）
+          LOG="${{ steps.read.outputs.update_log }}"
+          LOG_ESCAPED=$(echo "$LOG" | sed 's/\\n/\\\\n/g')
+          sed -i "s|{{UPDATE_LOG}}|$LOG_ESCAPED|g" index.html
+          sed -i "s|{{DATE}}|${{ steps.read.outputs.date }}|g" index.html
+          sed -i "s|{{DOWNLOAD_URL}}|${{ steps.read.outputs.download_url }}|g" index.html
+          sed -i "s|{{EXTRACT_CODE}}|${{ steps.read.outputs.extract_code }}|g" index.html
+
+      - name: 提交并推送
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --staged --quiet; then
+            echo "没有变化，跳过提交"
+          else
+            git commit -m "chore: 自动更新 index.html 从 update.json（含提取码）"
+            git push
+          fi
