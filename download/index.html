@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>下载 TIMU</title>
+    <title>下载 shrimpfarm</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -26,14 +26,9 @@
         .app-icon {
             width: 80px;
             height: 80px;
-            background: #2d89ff;
             border-radius: 18px;
             margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            color: white;
+            display: block;
         }
         h2 { font-size: 22px; margin-bottom: 8px; color: #1a1a1a; }
         .version { font-size: 13px; color: #999; margin-bottom: 25px; }
@@ -66,11 +61,11 @@
 </head>
 <body>
     <div class="card">
-        <div class="app-icon">📦</div>
-        <h2>TIMU</h2>
+        <!-- PNG图标，请将icon.png放在同目录下 -->
+        <img class="app-icon" src="icon.png" alt="shrimpfarm图标">
+        <h2>shrimpfarm</h2>
         <div class="version" id="versionInfo">准备下载...</div>
 
-        <!-- 下载按钮区域 -->
         <div id="downloadArea">
             <a class="btn" id="downloadBtn" href="#">⬇️ 立即下载</a>
             <div class="btn wechat" id="wechatTip" style="display: none;">
@@ -88,9 +83,7 @@
             const statusTip = document.getElementById('statusTip');
             const versionInfo = document.getElementById('versionInfo');
 
-            // ===== 已修改为你的 download 文件夹路径 =====
             const TXT_URL = 'https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/download/download.txt';
-            // ===========================================
 
             try {
                 const response = await fetch(TXT_URL);
@@ -102,18 +95,15 @@
                     return;
                 }
 
-                // 判断是否在微信内
                 const ua = navigator.userAgent.toLowerCase();
                 const isWechat = ua.includes('micromessenger');
 
                 if (isWechat) {
-                    // 微信内：隐藏普通下载按钮，显示引导提示
                     downloadBtn.style.display = 'none';
                     wechatTip.style.display = 'block';
                     statusTip.textContent = '微信内无法直接下载';
                     versionInfo.textContent = '已获取最新版本';
                 } else {
-                    // 浏览器环境：按钮直接跳转下载
                     downloadBtn.href = url;
                     statusTip.textContent = '点击按钮即可下载最新版';
                     versionInfo.textContent = '已连接到最新版本';
