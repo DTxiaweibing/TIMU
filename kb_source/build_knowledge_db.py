@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 # Knowledge base chunking & vectorization script (ONNX local version)
 # Uses local model_qint8.onnx + vocab.txt, no PyTorch needed
 
@@ -20,10 +20,92 @@ MAX_SEQ_LEN = 512
 MAX_CHARS = 500
 OVERLAP_CHARS = 60
 
+ALIAS_MAP = {
+    "气盘": ["气头", "纳米管", "增氧盘", "增氧环", "曝气盘", "微孔管"],
+    "增氧机": ["风机", "鼓风机", "罗茨风机", "增氧泵", "叶轮增氧机", "水车增氧机"],
+    "盐度": ["咸度", "含盐量", "盐分"],
+    "亚盐": ["亚硝酸盐", "亚硝态氮"],
+    "氨氮毒性": ["游离氨", "非离子氨"],
+    "硬度": ["总硬度"],
+    "碱度": ["总碱度"],
+    "投喂": ["喂料"],
+    "摄食": ["吃料"],
+    "食台": ["料台", "料盘", "食盘"],
+    "拌料配比": ["拌药"],
+    "饵料系数": ["饲料系数", "料比"],
+    "加热棒": ["加温棒", "加热管"],
+    "锅炉加温": ["烧锅炉"],
+    "小棚": ["冬棚", "保温棚"],
+    "调水": ["做水"],
+    "培藻": ["肥水", "培水"],
+    "放苗": ["投苗", "下苗"],
+    "换水": ["加水"],
+    "底排污": ["吸底"],
+    "应激游塘": ["游塘"],
+    "缺氧浮头": ["浮头"],
+    "损耗": ["掉苗"],
+    "红体病": ["红体"],
+    "肠炎白便": ["白便"],
+    "肠炎": ["空肠空胃"],
+}
+
+def add_aliases_to_text(text, max_per_term=3):
+    lines = text.split("\n")
+    term_counts = {term: 0 for term in ALIAS_MAP}
+    for i, line in enumerate(lines):
+        for term, aliases in ALIAS_MAP.items():
+            if term_counts[term] >= max_per_term:
+                continue
+            if term in line:
+                alias_text = "（又称" + "、".join(aliases) + "）"
+                new_line = line.replace(term, term + alias_text, 1)
+                if new_line != line:
+                    term_counts[term] += 1
+                    lines[i] = new_line
+                    break
+    return "\n".join(lines)
+
+def char_ngrams(s, n=4):
+    s = re.sub(r'\s+', '', s)
+    return set(s[i:i+n] for i in range(len(s) - n + 1))
+
+def ngram_jaccard(a, b, n=4):
+    nga = char_ngrams(a, n)
+    ngb = char_ngrams(b, n)
+    if not nga or not ngb:
+        return 0.0
+    inter = len(nga & ngb)
+    union = len(nga | ngb)
+    return inter / union if union > 0 else 0.0
+
+def exact_dedup(chunks):
+    seen = set()
+    result = []
+    for item in chunks:
+        content = item[2]
+        if content not in seen:
+            seen.add(content)
+            result.append(item)
+    return result
+
+def near_dedup(chunks, threshold=0.85):
+    if len(chunks) < 2:
+        return chunks
+    deduped = [chunks[0]]
+    for item in chunks[1:]:
+        is_dup = False
+        for j, existing in enumerate(deduped):
+            sim = ngram_jaccard(item[2], existing[2], 4)
+            if sim >= threshold:
+                if len(existing[2]) < len(item[2]):
+                    deduped[j] = item
+                is_dup = True
+                break
+        if not is_dup:
+            deduped.append(item)
+    return deduped
 
 class BertTokenizer:
-    """Simple BERT WordPiece tokenizer based on vocab.txt"""
-
     def __init__(self, vocab_path):
         with open(vocab_path, 'r', encoding='utf-8') as f:
             self.vocab = {t.strip(): i for i, t in enumerate(f)}
@@ -64,12 +146,9 @@ class BertTokenizer:
             np.array([token_type], dtype=np.int64),
         )
 
-
 def split_sentences(text, max_splits=3):
-    """Split into sentences by Chinese punctuation, max `max_splits` sentences"""
     sents = [s.strip() for s in re.split(r'[。？！；！?]', text) if s.strip()]
     return [s for s in sents if len(s) >= 10][:max_splits]
-
 
 def split_subsections(text, doc_type):
     if doc_type == "rules":
@@ -120,7 +199,6 @@ def split_subsections(text, doc_type):
         return chunks
     return []
 
-
 def get_embedding(session, tokenizer, text):
     ids, mask, ttype = tokenizer.encode(text)
     outputs = session.run(None, {
@@ -133,7 +211,6 @@ def get_embedding(session, tokenizer, text):
     if norm > 0:
         emb = emb / norm
     return emb.astype(np.float32)
-
 
 def main():
     model_path = BASE_DIR / "model_qint8.onnx"
@@ -165,17 +242,25 @@ def main():
             continue
 
         text = path.read_text(encoding='utf-8-sig')
+        text = add_aliases_to_text(text)
 
         chunks = split_subsections(text, doc_id)
         start = len(all_chunks)
         for i, ch in enumerate(chunks):
             all_chunks.append((doc_id, i, ch))
-        print(f"  {path.name}: {len(all_chunks) - start} chunks")
+        print(f"  {path.name}: {len(all_chunks) - start} raw chunks")
 
     if not all_chunks:
         print("No chunks generated. Check if input files exist.")
         print("Expected files: 水质理论篇.md, 小棚实操手册.md, 操作规则2026.md")
         return
+
+    pre_dedup = len(all_chunks)
+    all_chunks = exact_dedup(all_chunks)
+    after_exact = len(all_chunks)
+    all_chunks = near_dedup(all_chunks, 0.85)
+    after_near = len(all_chunks)
+    print(f"\nDedup: {pre_dedup} -> {after_exact} (exact) -> {after_near} (near, threshold=0.85)")
 
     print(f"\nTotal: {len(all_chunks)} chunks, generating embeddings...")
 
@@ -187,7 +272,6 @@ def main():
         if (i + 1) % 50 == 0 or i == total - 1:
             print(f"  [{i+1}/{total}]")
 
-    # Version tracking
     version_counter_file = BASE_DIR / "kb_version.txt"
     current_version = 1
     if version_counter_file.exists():
@@ -220,12 +304,10 @@ def main():
             (doc_id, idx, content, emb_bytes)
         )
 
-    # Compute md5
     conn.commit()
     conn.close()
     md5_hash = hashlib.md5(out_path.read_bytes()).hexdigest()
 
-    # Store version info in DB
     conn = sqlite3.connect(str(out_path))
     conn.execute("INSERT OR REPLACE INTO metadata VALUES (?, ?)", ("version", str(current_version)))
     conn.execute("INSERT OR REPLACE INTO metadata VALUES (?, ?)", ("chunks", str(len(all_chunks))))
@@ -233,7 +315,6 @@ def main():
     conn.commit()
     conn.close()
 
-    # Output version.json for TIMU
     version_info = {
         "version": current_version,
         "chunks": len(all_chunks),
@@ -246,7 +327,6 @@ def main():
     size_mb = out_path.stat().st_size / 1024 / 1024
     print(f"\nDone! v{current_version}, {len(all_chunks)} chunks -> {out_path.name} ({size_mb:.1f} MB)")
     print(f"  md5={md5_hash}")
-
 
 if __name__ == "__main__":
     main()
