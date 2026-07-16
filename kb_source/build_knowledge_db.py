@@ -49,6 +49,28 @@ ALIAS_MAP = {
     "肠炎": ["空肠空胃"],
 }
 
+SYNONYM_GROUPS = [
+    ["高了", "含量高了", "超标", "含量超标"],
+]
+
+def add_synonym_groups_to_text(text, max_per_group=3):
+    lines = text.split("\n")
+    group_counts = [0] * len(SYNONYM_GROUPS)
+    for i, line in enumerate(lines):
+        for gidx, group in enumerate(SYNONYM_GROUPS):
+            if group_counts[gidx] >= max_per_group:
+                continue
+            sorted_terms = sorted(group, key=len, reverse=True)
+            for term in sorted_terms:
+                if term in line:
+                    all_terms = "、".join(group)
+                    new_line = line.replace(term, term + "（同义：" + all_terms + "）", 1)
+                    if new_line != line:
+                        group_counts[gidx] += 1
+                        lines[i] = new_line
+                        break
+    return "\n".join(lines)
+
 def add_aliases_to_text(text, max_per_term=3):
     lines = text.split("\n")
     term_counts = {term: 0 for term in ALIAS_MAP}
@@ -243,6 +265,7 @@ def main():
 
         text = path.read_text(encoding='utf-8-sig')
         text = add_aliases_to_text(text)
+        text = add_synonym_groups_to_text(text)
 
         chunks = split_subsections(text, doc_id)
         start = len(all_chunks)
