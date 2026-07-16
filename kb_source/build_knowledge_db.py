@@ -50,7 +50,7 @@ ALIAS_MAP = {
 }
 
 SYNONYM_GROUPS = [
-    ["高了", "含量高了", "超标", "含量超标"],
+    ["高了","偏高", "含量高了", "超标", "含量超标"],
 ]
 
 def add_synonym_groups_to_text(text, max_per_group=3):
