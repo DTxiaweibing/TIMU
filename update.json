@@ -1,17 +1,17 @@
 {
-    "config_version": "1.2.6",
+    "config_version": "1.3.4",
     "file_info": {
-        "version": "1.2.6",
-        "name": "小棚养虾1.2.6.apk",
-        "size": 123630119,
-        "md5": "65C632B879670091A73B20F115E9107B",
-        "sha256": "C241FE045AA8DA31EA2DDE745BEF9143BE1E68BBA9217E94505B8821117227A7",
+        "version": "1.3.4",
+        "name": "shrimpfarm.apk",
+        "size": 126351984,
+        "md5": "14BAC11B58451F0844C77F44D575D5FB",
+        "sha256": "61389F24C2DA8BFEA47887B9C77BF466A595C7BABB341264621BB84F052949BB",
         "download_url": "https://gh-proxy.com/https://github.com/DTxiaweibing/shrimpfarm/releases/latest/download/shrimpfarm.apk
 "
     },
     "update_log": "1、完善了问答社区板块，大家有问题发上来，懂的帮忙回复！\n2、完善了智能问答机器人，尽管提问，听听专业的回答。\n3、修改了若干已知问题！",
     "metadata": {
-        "生成时间": "2026-07-14T04:20:09+08:00",
+        "生成时间": "2026-07-16T20:12:11+08:00",
         "JSON文件生成器版本": "1.02"
     }
 }
