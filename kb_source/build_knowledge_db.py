@@ -275,8 +275,8 @@ def main():
     print("Chunking documents...")
 
     name_map = [
-        ("水质调控篇.md", "theory"),
-        ("小棚实战手册.md", "manual"),
+        ("水质理论篇.md", "theory"),
+        ("小棚实操手册.md", "manual"),
         ("操作规则2026.md", "rules"),
         ("水生动物药物学.md", "pharma"),
         ("范老师徒弟班文字内容整理.md", "lecture"),
@@ -304,7 +304,7 @@ def main():
 
     if not all_chunks:
         print("No chunks generated. Check if input files exist.")
-        print("Expected files: 水质调控篇.md, 小棚实战手册.md, 操作规则2026.md, 水生动物药物学.md, 范老师徒弟班文字内容整理.md")
+        print("Expected files: 水质理论篇.md, 小棚实操手册.md, 操作规则2026.md, 水生动物药物学.md, 范老师徒弟班文字内容整理.md")
         return
 
     pre_dedup = len(all_chunks)
