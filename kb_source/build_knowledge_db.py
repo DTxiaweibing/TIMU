@@ -219,6 +219,28 @@ def split_subsections(text, doc_type):
                 for s in sents:
                     chunks.append(f"{sec_num} {s}")
         return chunks
+    elif doc_type == "pharma":
+        lines = text.split("\n")
+        chunks = []
+        buf = []
+        def flush():
+            nonlocal buf
+            if buf:
+                chunks.append("\n".join(buf).strip())
+                buf = []
+        for i, line in enumerate(lines):
+            if re.match(r'^[\u4e00-\u9fff]{2,8}$', line) and i + 1 < len(lines) and re.match(r'^[A-Z]', lines[i + 1]):
+                flush()
+            buf.append(line)
+        flush()
+        return [c for c in chunks if len(c) >= 50]
+    elif doc_type == "lecture":
+        parts = re.split(r'(?=^\d{8}\s)', text, flags=re.MULTILINE)
+        chunks = [p.strip() for p in parts if p.strip() and len(p.strip()) >= 50]
+        return chunks
+    elif doc_type == "single":
+        text = text.strip()
+        return [text] if len(text) >= 20 else []
     return []
 
 def get_embedding(session, tokenizer, text):
@@ -253,9 +275,16 @@ def main():
     print("Chunking documents...")
 
     name_map = [
-        ("水质理论篇.md", "theory"),
-        ("小棚实操手册.md", "manual"),
+        ("水质调控篇.md", "theory"),
+        ("小棚实战手册.md", "manual"),
         ("操作规则2026.md", "rules"),
+        ("水生动物药物学.md", "pharma"),
+        ("范老师徒弟班文字内容整理.md", "lecture"),
+        ("肥水培藻循环.md", "single"),
+        ("有毒氨比例表.md", "single"),
+        ("微生物藻类增殖数据.md", "single"),
+        ("对虾分阶段投喂管理.md", "single"),
+        ("弧菌药敏实验数据.md", "single"),
     ]
     for fname, doc_id in name_map:
         path = BASE_DIR / fname
@@ -275,7 +304,7 @@ def main():
 
     if not all_chunks:
         print("No chunks generated. Check if input files exist.")
-        print("Expected files: 水质理论篇.md, 小棚实操手册.md, 操作规则2026.md")
+        print("Expected files: 水质调控篇.md, 小棚实战手册.md, 操作规则2026.md, 水生动物药物学.md, 范老师徒弟班文字内容整理.md")
         return
 
     pre_dedup = len(all_chunks)
