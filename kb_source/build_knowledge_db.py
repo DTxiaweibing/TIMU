@@ -235,7 +235,7 @@ def split_subsections(text, doc_type):
         flush()
         return [c for c in chunks if len(c) >= 50]
     elif doc_type == "lecture":
-        parts = re.split(r'(?=^\d{8}\s)', text, flags=re.MULTILINE)
+        parts = re.split(r'(?=^\d{8}(?:\s|$))', text, flags=re.MULTILINE)
         chunks = [p.strip() for p in parts if p.strip() and len(p.strip()) >= 50]
         return chunks
     elif doc_type == "single":
