@@ -1,28 +1,22 @@
 #!/usr/bin/env python3
-"""测试微调后的 Qwen2.5-0.5B + LoRA adapter 效果"""
+"""测试微调后的 Qwen2.5-0.5B 效果"""
 
-import os
+import os, subprocess, sys
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 
-import torch, json, urllib.request
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+subprocess.run(['git', 'clone', '--depth', '1', 'https://github.com/DTxiaweibing/TIMU.git', '/tmp/TIMU'], check=True)
+os.makedirs('/tmp/adapter', exist_ok=True)
+for f in os.listdir('/tmp/TIMU/adapter'):
+    os.system(f'cp /tmp/TIMU/adapter/{f} /tmp/adapter/{f}')
+
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 
-print('下载 adapter 文件...')
-os.makedirs('/tmp/adapter', exist_ok=True)
-base = 'https://github.com/DTxiaweibing/TIMU/raw/main/adapter/'
-for f in ['adapter_model.safetensors', 'adapter_config.json']:
-    urllib.request.urlretrieve(base + f, f'/tmp/adapter/{f}')
-    print(f'  {f} 下载完成')
-
-print('加载 Qwen2.5-0.5B...')
+print('加载模型...')
 model = AutoModelForCausalLM.from_pretrained('Qwen/Qwen2.5-0.5B', torch_dtype='auto', device_map='auto')
-tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen2.5-0.5B')
-
-print('合并 LoRA adapter...')
+tok = AutoTokenizer.from_pretrained('Qwen/Qwen2.5-0.5B')
 model = PeftModel.from_pretrained(model, '/tmp/adapter').merge_and_unload()
-
-pipe = pipeline('text-generation', model=model, tokenizer=tokenizer, max_new_tokens=256)
 
 questions = [
     '虾塘氨氮突然升高到1.5mg/L怎么办？',
@@ -33,10 +27,12 @@ questions = [
 ]
 
 for q in questions:
-    r = pipe(messages=[{'role':'user', 'content':q}])
-    print('='*60)
+    text = tok.apply_chat_template(
+        [{'role':'system','content':'你是养虾专家'}, {'role':'user','content':q}],
+        tokenize=False, add_generation_prompt=True)
+    inputs = tok(text, return_tensors='pt').to(model.device)
+    out = model.generate(**inputs, max_new_tokens=256, do_sample=True, temperature=0.7)
+    ans = tok.decode(out[0][inputs['input_ids'].shape[1]:], skip_special_tokens=True)
     print(f'Q: {q}')
-    print(f'A: {r[0]["generated_text"][-1]["content"]}')
-
-print('='*60)
-print('测试完毕！')
+    print(f'A: {ans}')
+    print()
