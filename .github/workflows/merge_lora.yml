@@ -1,0 +1,54 @@
+name: Merge LoRA → Full Model
+
+on:
+  push:
+    branches: [main]
+    paths: ['adapter/**']
+  workflow_dispatch:
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install torch transformers peft sentencepiece
+
+      - name: Merge LoRA into Qwen2.5-0.5B
+        run: |
+          python -c "
+          from transformers import AutoModelForCausalLM, AutoTokenizer
+          from peft import PeftModel
+          import shutil, os
+
+          print('Loading base model...')
+          model = AutoModelForCausalLM.from_pretrained(
+              'Qwen/Qwen2.5-0.5B',
+              torch_dtype='auto',
+              device_map='cpu'
+          )
+          tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen2.5-0.5B')
+
+          print('Loading adapter...')
+          model = PeftModel.from_pretrained(model, 'adapter')
+          model = model.merge_and_unload()
+
+          os.makedirs('merged_model', exist_ok=True)
+          print('Saving merged model...')
+          model.save_pretrained('merged_model', safe_serialization=True)
+          tokenizer.save_pretrained('merged_model')
+          print('Done!')
+          "
+
+      - name: Upload merged model
+        uses: actions/upload-artifact@v4
+        with:
+          name: qwen-timu-merged
+          path: merged_model/
+          retention-days: 14
