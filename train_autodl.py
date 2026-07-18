@@ -4,7 +4,7 @@
 import os, json, requests, subprocess, sys
 
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-q',
-    'transformers>=4.45', 'peft', 'trl', 'datasets', 'sentencepiece'])
+    'transformers>=4.45', 'peft', 'trl<0.15', 'datasets', 'sentencepiece'])
 
 url = 'https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/kb_source/train_data.jsonl'
 r = requests.get(url)
