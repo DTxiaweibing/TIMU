@@ -1,58 +1,86 @@
 #!/usr/bin/env python3
-"""Qwen2.5-0.5B LoRA 微调 —— 用于 AutoDL / 任何 Linux GPU 环境"""
+"""Qwen2.5-0.5B LoRA 微调 —— 直接用 transformers + peft，不用 LLaMA-Factory"""
 
-import os, json, requests, subprocess, sys, yaml
+import os, json, requests, subprocess, sys
 
-# 1. 装依赖（AutoDL 镜像自带 PyTorch，只需补几个包）
+# 1. 装基础包（PyTorch 已自带）
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-q',
-    'llama-factory', 'datasets', 'sentencepiece'])
+    'transformers>=4.45', 'peft', 'trl', 'datasets', 'sentencepiece'])
 
-# 2. 下载训练数据
+# 2. 下载数据
 url = 'https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/kb_source/train_data.jsonl'
 r = requests.get(url)
 with open('train_data.jsonl', 'wb') as f:
     f.write(r.content)
-count = sum(1 for _ in open('train_data.jsonl'))
-with open('train_data.jsonl') as f:
-    sample = json.loads(f.readline())
-print(f'✅ 数据 {count} 条')
+data = [json.loads(l) for l in open('train_data.jsonl')]
+print(f'✅ 数据 {len(data)} 条')
 
-# 3. 注册数据集
-ds_info = {'train_data': {'file_name': 'train_data.jsonl', 'formatting': 'sharegpt',
-    'columns': {'messages': 'messages'}}}
-with open('dataset_info.json', 'w') as f:
-    json.dump(ds_info, f, ensure_ascii=False, indent=2)
+# 3. 转为 ChatML 格式
+from datasets import Dataset
+def convert(examples):
+    text = ''
+    for msg in examples['messages']:
+        role = msg['role']
+        content = msg['content']
+        if role == 'system':
+            text += f'<|im_start|>system\n{content}<|im_end|>\n'
+        elif role == 'user':
+            text += f'<|im_start|>user\n{content}<|im_end|>\n'
+        elif role == 'assistant':
+            text += f'<|im_start|>assistant\n{content}<|im_end|>\n'
+    text += '<|im_start|>assistant\n'
+    return {'text': text}
 
-# 4. 训练配置
-config = {
-    'model_name_or_path': 'Qwen/Qwen2.5-0.5B',
-    'stage': 'sft', 'do_train': True,
-    'finetuning_type': 'lora',
-    'template': 'qwen', 'cutoff_len': 1024,
-    'output_dir': '/root/output_qwen_timu',
-    'overwrite_cache': True,
-    'per_device_train_batch_size': 8,
-    'gradient_accumulation_steps': 4,
-    'lr_scheduler_type': 'cosine',
-    'logging_steps': 10, 'save_steps': 200,
-    'learning_rate': 5e-5, 'num_train_epochs': 3.0,
-    'fp16': True, 'plot_loss': True,
-    'lora_rank': 8, 'lora_alpha': 16, 'lora_dropout': 0.1,
-    'lora_target': ['q_proj', 'k_proj', 'v_proj', 'o_proj'],
-}
-os.makedirs('config', exist_ok=True)
-with open('config/train.yaml', 'w') as f:
-    yaml.dump(config, f, allow_unicode=True)
+ds = Dataset.from_list(data).map(convert)
 
-os.environ['LLAMAFACTORY_DATASET_DIR'] = '.'
+# 4. 加载模型 + tokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
+from peft import LoraConfig, get_peft_model
+from trl import SFTTrainer
 
-# 5. 开始训练
+model_name = 'Qwen/Qwen2.5-0.5B'
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype='auto', device_map='auto')
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer.padding_side = 'right'
+
+# 5. LoRA 配置
+lora_config = LoraConfig(
+    r=8, lora_alpha=16, target_modules=['q_proj','k_proj','v_proj','o_proj'],
+    lora_dropout=0.1, bias='none', task_type='CAUSAL_LM')
+
+model = get_peft_model(model, lora_config)
+print(f'可训练参数: {model.num_parameters(only_trainable=True):,}')
+
+# 6. 训练
+args = TrainingArguments(
+    output_dir='/root/timu_output',
+    per_device_train_batch_size=8,
+    gradient_accumulation_steps=2,
+    num_train_epochs=3,
+    learning_rate=5e-5,
+    fp16=True,
+    logging_steps=10,
+    save_steps=200,
+    lr_scheduler_type='cosine',
+    report_to='none',
+    save_only_model=True)
+
+trainer = SFTTrainer(
+    model=model,
+    args=args,
+    train_dataset=ds,
+    tokenizer=tokenizer,
+    max_seq_length=1024)
+
 print('='*60)
-print('🚀 开始训练... RTX 3090 约 20-30 分钟')
+print('开始训练... RTX 5090 约 10 分钟')
 print('='*60)
-subprocess.check_call(['llamafactory-cli', 'train', 'config/train.yaml'])
+trainer.train()
 
+# 7. 保存
+model.save_pretrained('/root/timu_output/adapter')
+tokenizer.save_pretrained('/root/timu_output/adapter')
 print('='*60)
-print('✅ 训练完成！结果在 /root/output_qwen_timu/')
-print('adapter_model.safetensors 即为 LoRA 权重')
+print(f'✅ 完成！LoRA 权重在 /root/timu_output/adapter/')
+print('adapter_model.safetensors 下载到本地即可')
 print('='*60)
