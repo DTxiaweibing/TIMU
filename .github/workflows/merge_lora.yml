@@ -17,7 +17,7 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install Python deps
+      - name: Install deps
         run: pip install torch transformers peft sentencepiece
 
       - name: Merge LoRA → Full Model
@@ -26,10 +26,8 @@ jobs:
           from transformers import AutoModelForCausalLM, AutoTokenizer
           from peft import PeftModel
           import os
-          print('Loading base model...')
           model = AutoModelForCausalLM.from_pretrained('Qwen/Qwen2.5-0.5B', torch_dtype='auto', device_map='cpu')
           tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen2.5-0.5B')
-          print('Loading adapter...')
           model = PeftModel.from_pretrained(model, 'adapter').merge_and_unload()
           os.makedirs('merged_model', exist_ok=True)
           model.save_pretrained('merged_model', safe_serialization=True)
@@ -43,28 +41,3 @@ jobs:
           name: qwen-timu-merged-safetensors
           path: merged_model/
           retention-days: 7
-
-      - name: Download llama.cpp release
-        run: |
-          wget -q https://github.com/ggml-org/llama.cpp/releases/download/b4899/llama-b4899-bin-ubuntu-x64.zip
-          unzip -q -j llama-b4899-bin-ubuntu-x64.zip -d /tmp/llama-bin/
-          chmod +x /tmp/llama-bin/llama-quantize
-          # also get the convert script
-          git clone --depth 1 --filter=blob:none --sparse https://github.com/ggml-org/llama.cpp /tmp/llama-src
-          cd /tmp/llama-src && git sparse-checkout set convert_hf_to_gguf.py && cd /
-
-      - name: Convert to GGUF FP16
-        run: |
-          pip install -q gguf sentencepiece protobuf
-          python /tmp/llama-src/convert_hf_to_gguf.py merged_model/ --outfile /tmp/qwen-fp16.gguf --outtype f16
-
-      - name: Quantize to Q4_K_M (~300MB)
-        run: |
-          /tmp/llama-bin/llama-quantize /tmp/qwen-fp16.gguf /tmp/qwen-q4_k_m.gguf q4_k_m
-
-      - name: Upload quantized GGUF (Q4_K_M)
-        uses: actions/upload-artifact@v4
-        with:
-          name: qwen-timu-q4_k_m
-          path: /tmp/qwen-q4_k_m.gguf
-          retention-days: 14
