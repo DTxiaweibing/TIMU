@@ -65,12 +65,10 @@ args = TrainingArguments(
     report_to='none',
     save_only_model=True)
 
-trainer = SFTTrainer(
-    model=model,
-    args=args,
-    train_dataset=ds,
-    tokenizer=tokenizer,
-    max_seq_length=1024)
+try:
+    trainer = SFTTrainer(model=model, args=args, train_dataset=ds, tokenizer=tokenizer, max_seq_length=1024)
+except TypeError:
+    trainer = SFTTrainer(model=model, args=args, train_dataset=ds, processing_class=tokenizer, max_seq_length=1024)
 
 print('='*60)
 print('开始训练... RTX 5090 约 10 分钟')
