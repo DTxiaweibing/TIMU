@@ -1,16 +1,17 @@
 {
-    "config_version": "1.3.5",
+    "config_version": "1.4.5",
     "file_info": {
-        "version": "1.3.5",
-        "name": "shripfarm.apk",
-        "size": 126352100,
-        "md5": "3B1FAD0DD3D2BF3F82A698B0339E45E2",
-        "sha256": "95E0FF681EE0EFDC716EA13F98398AAAC1FE18823B10496EF1F2533815AAD7D0",
-        "download_url": "https://gh-proxy.com/https://github.com/DTxiaweibing/TIMU/releases/latest/download/shripfarm.apk"
+        "version": "1.4.5",
+        "name": "shrimpfarm.apk",
+        "size": 117866056,
+        "md5": "3AC6BCAD2C7F0AD6E47562B9EB3734AA",
+        "sha256": "AF841FEFAFA1715AD1064C6160BBA99668BF346B455E79D6EC34C19C1BBDCEDE",
+        "signature_fingerprint": "d6:8a:c3:d8:00:da:57:bf:ea:0b:02:f6:92:d6:d4:06:96:ee:75:65:cc:2c:83:6a:d7:67:73:fb:90:ed:ac:76",
+        "download_url": "https://gh-proxy.com/https://github.com/DTxiaweibing/TIMU/releases/latest/download/shrimpfarm.apk"
     },
     "update_log": "无更新说明",
     "metadata": {
-        "生成时间": "2026-07-21T01:31:39+08:00",
+        "生成时间": "2026-07-31T00:07:00+08:00",
         "JSON文件生成器版本": "1.02"
     }
 }
