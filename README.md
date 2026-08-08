@@ -11,13 +11,13 @@
 
 ## 📱 核心功能
 
-本应用包含三大核心模块，覆盖养殖生产与技术学习全流程，**全程无需网络**，数据本地存储。
+本应用包含两大核心模块，覆盖养殖生产全流程，**全程无需网络**，数据本地存储。
 
 ### 1. 📝 任意棚数查料表
 专门为养虾场设计的吃料登记工具。
 - 时间输入 **不用输冒号**，直接输数字自动格式化
 - 登记吃完时间时，**输入任意字符自动变成对号**，并自动算出吃料用时
-- 支持“去拌料”标记、异常棚号跳过计算
+- 支持"去拌料"标记、异常棚号跳过计算
 - 颜色区分状态，一目了然，适合大规模养殖管理
 
 
@@ -28,20 +28,11 @@
 - 棚数超出预设时，自动 **红边框 + 黄背景** 醒目提醒
 - 支持多棚批量计算、列固定、隐藏等高级表格操作
 
-### 3. 📚 养殖刷题宝
-水产养殖学习、复习、考证专用刷题工具。
-- 每次自动从题库 **随机抽取50题**
-- 支持 **本地导入题库 + 网络在线获取题库**
-- 后续会持续更新、增加更多网络题库
-- 实时判断对错，显示解析，方便巩固知识点
-
 ---
 
-## 🖼️ 应用截图
+## 🖼️ 应用演示
 
-| 拌料计算器 | 查料记录表 | 刷题宝 |
-| :---: | :---: | :---: |
-| ![拌料计算器](https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/images/banliao.jpg) | ![查料记录](https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/images/chaliao.jpg) | ![刷题宝](https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/images/shuati.jpg) |
+![养虾助手操作演示](https://raw.githubusercontent.com/DTxiaweibing/TIMU/main/images/app-showcase.gif)
 
 ---
 

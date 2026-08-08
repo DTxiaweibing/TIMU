@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="garden">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>功能介绍 — 养虾助手</title>
+<meta name="description" content="养虾助手功能详解：批次管理、投喂记录、巡塘查料、拌料计算、水质检测、数据分析、行情资讯、计划任务、数据备份。">
+<meta name="theme-color" content="oklch(95.5% 0.022 92)">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+/* Hallmark · genre: editorial · macrostructure: long-document · theme: garden · enrichment: none · nav: N1a · footer: Ft2 */
+/* Hallmark · pre-emit critique: P5 H4 E5 S5 R5 V5 */
+/* ============================================================
+   Tokens · Garden — 植物志 · 种子目录美学
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Young+Serif&family=Hanken+Grotesk:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap");
+
+:root {
+  --color-paper:       oklch(95.5% 0.022 92);
+  --color-paper-2:     oklch(92.5% 0.026 92);
+  --color-paper-3:     oklch(88.5% 0.030 90);
+  --color-rule:        oklch(83%   0.028 115);
+  --color-rule-2:      oklch(62%   0.045 132);
+  --color-muted:       oklch(48%   0.040 138);
+  --color-neutral:     oklch(40%   0.045 142);
+  --color-ink-2:       oklch(33%   0.050 150);
+  --color-ink:         oklch(24%   0.052 152);
+  --color-accent:      oklch(47%   0.13  140);
+  --color-accent-2:    oklch(54%   0.14  46);
+  --color-accent-ink:  oklch(96%   0.02  92);
+  --color-focus:       oklch(47%   0.13  140);
+  --tint-moss:         oklch(47%   0.13  140 / 0.10);
+  --tint-clay:         oklch(54%   0.14  46 / 0.10);
+
+  --font-display: "Young Serif", "Songti SC", "Noto Serif SC", "SimSun", ui-serif, Georgia, serif;
+  --font-body:    "Hanken Grotesk", "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+  --font-label:   "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+
+  --display-weight: 400;
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-md:   1.125rem;
+  --text-lg:   1.375rem;
+  --text-xl:   1.75rem;
+  --text-2xl:  2.25rem;
+  --text-display:   clamp(2rem, 4vw + 1rem, 3.25rem);
+  --text-display-s: clamp(1.5rem, 2.4vw + 1rem, 2.2rem);
+
+  --lh-tight:   1.12;
+  --lh-snug:    1.25;
+  --lh-normal:  1.55;
+  --lh-relaxed: 1.75;
+
+  --tracking-display: -0.006em;
+  --tracking-tight:   -0.004em;
+  --tracking-label:   0.14em;
+
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 8rem;
+
+  --section-gap: 5rem;
+  --page-max:      52rem;
+  --page-gutter:   clamp(1.25rem, 4vw, 3rem);
+  --measure:       60ch;
+  --rule-hair:     0.5px;
+  --rule-fine:     1px;
+
+  --radius-card: 0;
+  --radius-pill: 0;
+  --radius-input: 0;
+  --rule-card: 1px;
+  --shadow-card: 0 14px 34px -20px oklch(24% 0.05 150 / 0.22),
+                 0 1px 2px oklch(24% 0.05 150 / 0.08);
+
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-short: 220ms;
+}
+
+/* ============================================================
+   Reset & base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--color-paper); color: var(--color-ink); overflow-x: clip; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--lh-relaxed);
+  letter-spacing: var(--tracking-normal);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+  padding-inline: max(var(--page-gutter), env(safe-area-inset-left));
+  padding-block-end: env(safe-area-inset-bottom);
+  overflow-x: clip;
+}
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: var(--display-weight); line-height: var(--lh-tight); letter-spacing: var(--tracking-display); color: var(--color-ink); margin: 0; overflow-wrap: anywhere; min-width: 0; }
+h1 { font-size: var(--text-display); }
+h2 { font-size: var(--text-display-s); }
+p  { margin: 0; max-width: var(--measure); }
+a  { color: inherit; text-decoration: none; }
+img, picture, svg, video { display: block; max-width: 100%; height: auto; }
+ul, ol { margin: 0; padding: 0; }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; border-radius: 2px; }
+::selection { background: var(--color-accent); color: var(--color-paper); }
+
+.container { max-width: var(--page-max); margin-inline: auto; width: 100%; }
+.muted { color: var(--color-muted); }
+.tnum  { font-variant-numeric: tabular-nums; }
+.label {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.rule { border: 0; border-top: var(--rule-hair) solid var(--color-rule); margin: 0; }
+.serif { font-family: var(--font-display); }
+
+/* ============================================================
+   Nav · N1a wordmark + 2 links
+   ============================================================ */
+.nav-min {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-block: var(--space-lg);
+  border-block-end: var(--rule-fine) solid var(--color-rule);
+}
+.nav-min .wordmark {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-display);
+  color: var(--color-ink);
+}
+.nav-min ul { display: flex; align-items: center; gap: var(--space-lg); list-style: none; }
+.nav-min a { font-size: var(--text-sm); color: var(--color-ink-2); white-space: nowrap; }
+.nav-min a:hover { color: var(--color-accent); }
+.nav-min a:active { color: var(--color-ink); }
+
+/* ============================================================
+   Long Document · prose
+   ============================================================ */
+.doc { padding-block: var(--space-2xl) var(--space-3xl); }
+.doc__opening { margin-block-end: var(--space-3xl); }
+.doc__opening .label { margin-block-end: var(--space-sm); }
+.doc__opening h1 { margin-block-end: var(--space-lg); }
+.doc__opening .lede { font-size: var(--text-lg); line-height: var(--lh-relaxed); color: var(--color-ink-2); }
+
+.prose > * + * { margin-block-start: var(--space-lg); }
+.prose p { color: var(--color-ink-2); }
+.prose p a { color: var(--color-accent); border-block-end: var(--rule-fine) solid var(--color-accent); }
+.prose p a:hover { color: var(--color-ink); border-block-end-color: var(--color-ink); }
+.prose p a:active { color: var(--color-accent-2); border-block-end-color: var(--color-accent-2); }
+.prose h2 {
+  margin-block-start: var(--space-3xl);
+  margin-block-end: var(--space-lg);
+}
+.prose h3 { margin-block-start: var(--space-xl); margin-block-end: var(--space-md); }
+.prose ul { padding-inline-start: 1.25rem; list-style: none; }
+.prose li { position: relative; padding-inline-start: 1rem; color: var(--color-ink-2); }
+.prose li + li { margin-block-start: var(--space-xs); }
+.prose li::before {
+  content: "·";
+  position: absolute;
+  inset-inline-start: 0;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+}
+.prose figure { margin-block: var(--space-xl) 0; }
+.prose figcaption { font-family: var(--font-label); font-size: var(--text-xs); letter-spacing: var(--tracking-label); color: var(--color-muted); margin-block-start: var(--space-sm); }
+.demo-inline {
+  width: min(240px, 100%);
+  background: var(--color-paper-2);
+  border: var(--rule-fine) solid var(--color-rule);
+  padding: var(--space-sm);
+  box-shadow: var(--shadow-card);
+}
+.demo-inline img { width: 100%; height: auto; }
+
+blockquote {
+  margin: var(--space-xl) 0 0;
+  padding-inline-start: var(--space-lg);
+  border-inline-start: 2px solid var(--color-accent-2);
+  color: var(--color-ink);
+  font-size: var(--text-md);
+  line-height: var(--lh-relaxed);
+}
+
+/* ============================================================
+   Download · F3 规格表 + 按钮
+   ============================================================ */
+.download {
+  border-block-start: var(--rule-fine) solid var(--color-rule);
+  padding-block: var(--space-3xl);
+}
+.download__intro .label { margin-block-end: var(--space-sm); }
+.download__intro h2 { margin-block-end: var(--space-md); }
+.download__intro p { color: var(--color-ink-2); margin-block-end: var(--space-lg); }
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  min-height: 48px;
+  padding: var(--space-sm) var(--space-lg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  border: var(--rule-fine) solid var(--color-accent);
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+}
+.cta--solid { background: var(--color-accent); color: var(--color-accent-ink); }
+.cta--solid:hover { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+.cta--solid:active { background: var(--color-ink-2); border-color: var(--color-ink-2); color: var(--color-paper); }
+.spec-sheet { width: 100%; border-collapse: collapse; table-layout: fixed; margin-block-start: var(--space-xl); }
+.spec-sheet tr { border-block-end: var(--rule-hair) solid var(--color-rule); }
+.spec-sheet th {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  text-align: start;
+  padding-block: var(--space-sm);
+  padding-inline-end: var(--space-md);
+  vertical-align: top;
+  white-space: nowrap;
+}
+.spec-sheet td {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  color: var(--color-ink-2);
+  padding-block: var(--space-sm);
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+.spec-sheet tr:last-child { border-block-end: 0; }
+
+/* ============================================================
+   Footer · Ft2 单行
+   ============================================================ */
+.foot-line {
+  border-block-start: var(--rule-fine) solid var(--color-rule);
+  padding-block: var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+.foot-line p { font-family: var(--font-label); font-size: var(--text-xs); color: var(--color-muted); letter-spacing: 0.02em; }
+.foot-line ul { display: flex; align-items: center; gap: var(--space-lg); list-style: none; }
+.foot-line a { font-family: var(--font-label); font-size: var(--text-xs); color: var(--color-ink-2); white-space: nowrap; }
+.foot-line a:hover { color: var(--color-accent); }
+.foot-line a:active { color: var(--color-ink); }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 28rem) {
+  .nav-min ul { gap: var(--space-md); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav-min container" aria-label="主导航">
+  <a class="wordmark" href="index.html">养虾助手</a>
+  <ul>
+    <li><a href="index.html">首页</a></li>
+    <li><a href="https://github.com/DTxiaweibing/TIMU" target="_blank" rel="noopener">GitHub</a></li>
+  </ul>
+</nav>
+
+<main class="container">
+  <article class="doc">
+    <header class="doc__opening">
+      <p class="label">功能介绍 · 十一个模块</p>
+      <h1>一本放在兜里的养殖台账</h1>
+      <p class="lede">养虾不是一件能靠脑子记完的事——几十个棚、四餐投喂、每日水质、临时拌料，错一项就得多跑一趟。这个应用把养殖生产里反复出现的琐事，各自收进一个专门的模块里，每一项都能离线使用，数据留在手机里。</p>
+    </header>
+
+    <div class="prose">
+      <h2>批次与基础数据</h2>
+      <p>一次养虾就是一批。应用支持创建多个批次，批次之间数据完全隔离，互不干扰。放苗日期、苗种品牌与数量、饲料品牌、池塘参数、动保预设，在基础数据里一次性配置好，后面的记录都从这里取。</p>
+
+      <h2>投喂记录</h2>
+      <p>每天的早、中、晚、夜宵四餐投喂量逐条记录，动保使用情况同步登记。列表支持分页加载与滚动同步，棚多的时候也不用一页页翻到底。</p>
+
+      <h2>巡塘查料</h2>
+      <p>输入棚数与喂料时间，自动生成查料表，逐棚计算吃料用时。吃料超时的棚自动标红，正常、异常、已排除以颜色区分，大规模养殖时一眼能扫出问题棚。</p>
+
+      <h2>拌料计算</h2>
+      <p>告别纸笔和计算器。发酵料、粉料、0.3 料、0.5 料、1.0 料多规格自动计算，加水比例在 10%–40% 之间自由调节。棚数超出预设时自动以红边框、黄背景醒目提醒，并支持多棚批量计算、列固定与隐藏。</p>
+
+      <h2>水质检测</h2>
+      <p>弧菌、盐度、氨氮、亚硝酸盐、pH、溶解氧、水温、余氯、硫化氢、ORP 等十一项指标逐日记录，支持调取上次记录对照，自动汇总统计。</p>
+
+      <h2>数据分析</h2>
+      <p>投喂量、吃料用时、水质三个维度的趋势图放在一起看。柱状图与折线图可切换，时间范围支持 7 天、15 天、30 天与自定义。</p>
+
+      <h2>行情资讯</h2>
+      <p>水产市场价格实时查询，按品种分类展示，价格走势一页看全，出虾前先看价。</p>
+
+      <h2>计划任务</h2>
+      <p>改底、消毒这类周期性作业，自定义一次，应用在后台自动生成到期任务，日间与晚间分别提醒，靠安排而不是靠记性。</p>
+
+      <h2>数据备份</h2>
+      <p>本地 SQLite 之外，可选坚果云 WebDAV 云备份，应用后台自动执行，最多保留 20 份历史。手机丢了，台账还在。</p>
+
+      <h2>账号体系</h2>
+      <p>通过 Supabase 邮箱注册与登录，可设置昵称，记录人信息会关联到每一条投喂记录上——几个师傅共用一部手机时，能分清是谁记的。</p>
+
+      <figure>
+        <div class="demo-inline">
+          <img src="images/app-showcase.gif" alt="养虾助手操作演示" width="540" height="1100" loading="lazy">
+        </div>
+        <figcaption>演示 · App 实拍</figcaption>
+      </figure>
+
+      <blockquote>
+        完全离线，是本应用的基本立场。池塘边没有信号的时候，记录也不能停。
+      </blockquote>
+    </div>
+  </article>
+
+  <!-- Download -->
+  <section class="download" aria-labelledby="download-title">
+    <div class="download__intro">
+      <p class="label">Android · 免费 · 无广告</p>
+      <h2 id="download-title">下载养虾助手</h2>
+      <p>安装包约 112 MB。下载后如提示未知来源，请在系统设置中允许本次安装。</p>
+      <a class="cta cta--solid" href="https://gh-proxy.com/https://github.com/DTxiaweibing/TIMU/releases/latest/download/shrimpfarm.apk" download>下载 APK · 1.4.5</a>
+    </div>
+    <table class="spec-sheet tnum">
+      <tr><th scope="row">版本</th><td>1.4.5</td></tr>
+      <tr><th scope="row">文件</th><td>shrimpfarm.apk</td></tr>
+      <tr><th scope="row">大小</th><td>117,866,056 B</td></tr>
+      <tr><th scope="row">MD5</th><td>3AC6BCAD2C7F0AD6E47562B9EB3734AA</td></tr>
+      <tr><th scope="row">SHA-256</th><td>AF841FEFAFA1715AD1064C6160BBA99668BF346B455E79D6EC34C19C1BBDCEDE</td></tr>
+    </table>
+  </section>
+</main>
+
+<footer class="foot-line container">
+  <p>© 2026 养虾助手 · MIT 许可</p>
+  <ul>
+    <li><a href="https://github.com/DTxiaweibing/TIMU/blob/main/privacy.html.html" target="_blank" rel="noopener">隐私政策</a></li>
+    <li><a href="https://github.com/DTxiaweibing/TIMU/blob/main/promo/help.html" target="_blank" rel="noopener">使用帮助</a></li>
+    <li><a href="https://dtxiaweibing.github.io/TIMU/" target="_blank" rel="noopener">GitHub Pages</a></li>
+  </ul>
+</footer>
+
+</body>
+</html>
