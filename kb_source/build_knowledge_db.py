@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """知识库构建脚本（唯一权威切块实现）— 由 GitHub Actions 自动执行。
 
 工作流
@@ -141,8 +141,15 @@ def clean(text):
     return text
 
 
+QA_SPLIT = re.compile(r"(?=^问[：:])", re.MULTILINE)
+
+
 def split_blocks(text):
-    """按空行 / markdown 标题 / 编号 / 【小节】切成语义块，标题作为块首"""
+    """按空行 / markdown 标题 / 编号 / 【小节】 / 问答对切成语义块，标题作为块首。
+
+    Q&A 文档（"问：xxx\\n答：yyy"）每对独立成块，不被 chunk_text 合并，
+    保证检索命中的是完整的"问+答"上下文。
+    """
     blocks, cur = [], []
     for ln in text.split("\n"):
         s = ln.strip()
@@ -153,7 +160,8 @@ def split_blocks(text):
             continue
         if re.match(r"^#{1,6}\s", s) or re.match(r"^【[^】]+】$", s) \
                 or re.match(r"^\d+[\.、]\s", s) or re.match(r"^\*\*(?:\d+|[一二三四五六七八九十]+)[.、]",
-                                                                s):
+                                                                s) \
+                or re.match(r"^问[：:]", s):
             if cur:
                 blocks.append("\n".join(cur))
             cur = [ln]
@@ -161,7 +169,19 @@ def split_blocks(text):
             cur.append(ln)
     if cur:
         blocks.append("\n".join(cur))
-    return [b.strip() for b in blocks if b.strip()]
+
+    # 对每个块再按 "问：" 拆成单对问答；QA 块长度天然远小于 T_MAX，不会被 split_long 硬切
+    out = []
+    for b in blocks:
+        if re.search(r"^问[：:]", b, re.MULTILINE):
+            # 标记 Q&A 块：每个问答对独立成块，合并阶段不再合并
+            for qa in QA_SPLIT.split(b):
+                qa = qa.strip()
+                if qa:
+                    out.append(qa + "\n[QA_KEEP]")
+        else:
+            out.append(b)
+    return [b.strip() for b in out if b.strip()]
 
 
 SENT_END = re.compile(r"(?<=[。！？；!?;])")
@@ -191,12 +211,26 @@ def split_long(block, limit=T_MAX):
 
 
 def chunk_text(text):
-    """切成 200~500 字语义块：相邻短块合并，超长块按句子拆分，块间保留 OVERLAP 重叠"""
+    """切成 200~500 字语义块：相邻短块合并，超长块按句子拆分，块间保留 OVERLAP 重叠。
+
+    标记 [QA_KEEP] 的 Q&A 块不参与合并，每个问答对独立成块。
+    """
     raw = []
     for b in split_blocks(text):
-        raw.extend(split_long(b))
+        if b.endswith("[QA_KEEP]"):
+            # Q&A 块通常远小于 T_MAX，无需走 split_long；直接保留
+            raw.append(b)
+        else:
+            raw.extend(split_long(b))
     merged, cur = [], ""
     for b in raw:
+        qa = b.endswith("[QA_KEEP]")
+        if qa:
+            if cur:
+                merged.append(cur)
+                cur = ""
+            merged.append(b[:-len("[QA_KEEP]")].strip())
+            continue
         if not cur:
             cur = b
         elif len(cur) < T_MIN and len(cur) + len(b) <= T_MAX:
