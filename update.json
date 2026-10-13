@@ -1,17 +1,17 @@
 {
-    "config_version": "1.4.5",
+    "config_version": "1.5.6",
     "file_info": {
-        "version": "1.4.5",
+        "version": "1.5.6",
         "name": "shrimpfarm.apk",
-        "size": 117866056,
-        "md5": "3AC6BCAD2C7F0AD6E47562B9EB3734AA",
-        "sha256": "AF841FEFAFA1715AD1064C6160BBA99668BF346B455E79D6EC34C19C1BBDCEDE",
+        "size": 257500577,
+        "md5": "3041F378B4ABDFA0447E541690FBF635",
+        "sha256": "9A0FBD2B24634CBE4B205EA8A1C0944D0B02AE4F102384EB2DAA7885970E7E88",
         "signature_fingerprint": "d6:8a:c3:d8:00:da:57:bf:ea:0b:02:f6:92:d6:d4:06:96:ee:75:65:cc:2c:83:6a:d7:67:73:fb:90:ed:ac:76",
         "download_url": "https://gh-proxy.com/https://github.com/DTxiaweibing/TIMU/releases/latest/download/shrimpfarm.apk"
     },
-    "update_log": "无更新说明",
+    "update_log": "1.专家咨询板块增加语音转文字发送提问\n2.专家咨询板块增加回答朗读功能\n3.知识库文件更新\n4.EPR测试上线",
     "metadata": {
-        "生成时间": "2026-08-09T07:25:42+08:00",
+        "生成时间": "2026-10-14T05:31:29+08:00",
         "JSON文件生成器版本": "1.02"
     }
 }
